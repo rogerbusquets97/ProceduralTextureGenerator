@@ -7,29 +7,32 @@ using System.Threading;
 
 namespace PTG
 {
-    public enum NodeType { None = 0 }
+    public enum NodeType { None = 0, Fractal}
 
-    public class NodeBase : MonoBehaviour
+    public class NodeBase
     {
+        public Vector2Int ressolution;
         public Rect rect;
         public string title;
         public bool isDragged;
         public bool isSelected;
 
         protected object door;
-        NodeEditorWindow editor;
+        protected NodeEditorWindow editor;
 
-        //InPoints
-        //OutPoints
+        public List<ConnectionPoint> inPoints;
+        public List<ConnectionPoint> outPoints;
 
         public List<Action> MainThreadActions = new List<Action>();
         public Action<NodeBase> OnRemoveNode;
 
+        Texture2D texture;
+
         virtual public float GetValue(int x, int y) { return 0; }
 
-        public NodeBase(NodeEditorWindow e)
+        public Texture2D GetTexture()
         {
-            editor = e;
+            return texture;
         }
         public void Drag(Vector2 delta)
         {
@@ -47,7 +50,25 @@ namespace PTG
         }
         public virtual void Draw()
         {
+            GUI.Box(rect, title);
+        }
 
+        public virtual void DrawInOutPoints()
+        {
+            if (inPoints != null)
+            {
+                for (int i = 0; i < inPoints.Count; i++)
+                {
+                    inPoints[i].Draw(i + 1);
+                }
+            }
+            if (outPoints != null)
+            {
+                for (int i = 0; i < outPoints.Count; i++)
+                {
+                    outPoints[i].Draw(i + 1);
+                }
+            }
 
         }
 
@@ -123,8 +144,16 @@ namespace PTG
         protected void ProcessContextMenu()
         {
             GenericMenu genericMenu = new GenericMenu();
-            //genericMenu.AddItem(new GUIContent("Remove Node"), false, OnClickRemoveNode);
+            genericMenu.AddItem(new GUIContent("Remove Node"), false, OnClickRemoveNode);
             genericMenu.ShowAsContext();
+        }
+
+        protected void OnClickRemoveNode()
+        {
+            if(OnRemoveNode!= null)
+            {
+                OnRemoveNode(this);
+            }
         }
     }
 

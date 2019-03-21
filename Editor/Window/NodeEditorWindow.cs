@@ -9,11 +9,18 @@ namespace PTG
     public class NodeEditorWindow : EditorWindow
     {
         //List Nodes
+        private List<NodeBase> nodes;
         NodeBase selectedNode;
         //List connections
+        private List<NodeConnection> connections;
+        private ConnectionPoint selectedInPoint;
+        private ConnectionPoint selectedOutPoint;
         //Grid
         private Vector2 offset;
         private Vector2 drag;
+        //GUI
+        private GUIStyle inPointStyle;
+        private GUIStyle outPointStyle;
         // Preview Win
         private Rect previewRect;
         Camera previewCam;
@@ -33,6 +40,18 @@ namespace PTG
         }
         private void OnEnable()
         {
+            inPointStyle = new GUIStyle();
+            inPointStyle.normal.background = EditorGUIUtility.Load("builtin skins/darkskin/images/btn right.png") as Texture2D;
+            inPointStyle.active.background = EditorGUIUtility.Load("builtin skins/darkskin/images/btn right on.png") as Texture2D;
+            inPointStyle.border = new RectOffset(4, 4, 12, 12);
+
+            outPointStyle = new GUIStyle();
+            outPointStyle.normal.background = EditorGUIUtility.Load("builtin skins/darkskin/images/btn right.png") as Texture2D;
+            outPointStyle.active.background = EditorGUIUtility.Load("builtin skins/darkskin/images/btn right on.png") as Texture2D;
+            outPointStyle.border = new RectOffset(4, 4, 12, 12);
+
+            nodes = new List<NodeBase>();
+
             previewRect = new Rect(position.width - 300, position.height / 2, 300, position.height);
 
             camObj = new GameObject();
@@ -51,16 +70,34 @@ namespace PTG
             MeshRenderer renderer = previewObj.GetComponent<MeshRenderer>();
             renderer.material = new Material(Shader.Find("HDRenderPipeline/Lit"));
 
-
+            var folder = System.IO.Directory.CreateDirectory("./Tmp");
+            AssetDatabase.Refresh();
         }
+
+        private void OnDisable()
+        {
+            DestroyImmediate(camObj);
+            DestroyImmediate(previewObj);
+            if (System.IO.Directory.Exists("./Tmp"))
+            {
+                FileUtil.DeleteFileOrDirectory("./Tmp");
+            }
+            AssetDatabase.Refresh();
+        }
+
         private void OnGUI()
         {
             DrawGrid(20, 0.2f, Color.gray);
             DrawGrid(100, 0.4f, Color.gray);
+            ProcessNodeEvents(Event.current);
+            DrawConnections();
+            DrawConnectionLine(Event.current);
 
             DrawEditor();
 
             ProcessEvents(Event.current);
+            if (GUI.changed)
+                Repaint();
         }
 
         void DrawEditor()
@@ -69,12 +106,87 @@ namespace PTG
 
             DrawPreviewWindow();
             GUI.BringWindowToFront(0);
+            DrawNodes();
             EndWindows();
         }
 
         public void SetSelectedNode(NodeBase n)
         {
             selectedNode = n;
+        }
+
+        private void DrawNodes()
+        {
+            Event e = Event.current;
+
+            if(nodes!= null)
+            {
+                for(int i = 0; i<nodes.Count; ++i)
+                {
+                    nodes[i].DrawInOutPoints();
+                }
+            }
+
+            if(nodes!= null)
+            {
+                for(int i = 0; i< nodes.Count; ++i)
+                {
+                    nodes[i].Update();
+                    nodes[i].Draw();
+                }
+            }
+        }
+
+        private void DrawConnections()
+        {
+            if(connections!= null)
+            {
+                for(int i = 0; i< connections.Count; ++i)
+                {
+                    connections[i].Draw();
+                }
+            }
+        }
+
+        private void ProcessNodeEvents(Event e)
+        {
+            if(nodes!= null)
+            {
+                for(int i = nodes.Count -1; i>=0; --i)
+                {
+                    nodes[i].ProcessEvents(e);
+                }
+            }
+        }
+
+        private void DrawConnectionLine(Event e)
+        {
+            if (selectedInPoint != null && selectedOutPoint == null)
+            {
+                Handles.DrawBezier(selectedInPoint.rect.center,
+                    e.mousePosition,
+                    selectedInPoint.rect.center + Vector2.left * 50f,
+                    e.mousePosition - Vector2.left * 50f,
+                    Color.white,
+                    null,
+                    2f);
+                GUI.changed = true;
+            }
+
+            if (selectedOutPoint != null && selectedInPoint == null)
+            {
+                Handles.DrawBezier(selectedOutPoint.rect.center,
+                   e.mousePosition,
+                   selectedOutPoint.rect.center - Vector2.left * 50f,
+                   e.mousePosition + Vector2.left * 50f,
+                   Color.white,
+                   null,
+                   2f);
+
+                GUI.changed = true;
+            }
+
+            Repaint();
         }
 
         private void DrawGrid(float gridSpacing, float gridOpacity, Color gridColor)
@@ -127,7 +239,182 @@ namespace PTG
 
         void ProcessEvents(Event e)
         {
+            drag = Vector2.zero;
             ProcessPreviewEvents(e);
+
+            switch(e.type)
+            {
+                case EventType.MouseDown:
+                    if(e.button == 0)
+                    {
+                        ClearConnectionSelection();
+                    }
+                    if(e.button == 1)
+                    {
+                        ProcessContextMenu(e.mousePosition);
+                        Debug.Log("Process");
+                    }
+                    break;
+                case EventType.MouseDrag:
+                    if(e.button == 0)
+                    {
+                        if(!previewRect.Contains(e.mousePosition))
+                        {
+                            OnDrag(e.delta);
+                        }
+                    }
+                    break;
+            }
+        }
+
+        private void OnDrag(Vector2 delta)
+        {
+            drag = delta;
+            if(nodes!= null)
+            {
+                for(int i = 0; i< nodes.Count; ++i)
+                {
+                    nodes[i].Drag(delta);
+                }
+            }
+            GUI.changed = true;
+        }
+
+        private void ProcessContextMenu(Vector2 mousePosition)
+        {
+            GenericMenu genericMenu = new GenericMenu();
+            genericMenu.AddItem(new GUIContent("Generators/Fractal Noise"), false, () => OnClickAddNode(mousePosition,NodeType.Fractal));
+            genericMenu.ShowAsContext();
+        }
+
+        private void OnClickAddNode(Vector2 mousePosition, NodeType type)
+        {
+            switch(type)
+            {
+                case NodeType.Fractal:
+                    nodes.Add(new FractalNode(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this));
+                    break;
+            }
+        }
+
+        private void OnClickRemoveNode(NodeBase n)
+        {
+            if(connections!= null)
+            {
+                List<NodeConnection> connectionToRemove = new List<NodeConnection>();
+                for(int i = 0; i< connections.Count; ++i)
+                {
+                    if(n.inPoints!= null)
+                    {
+                        for(int j = 0; j<n.inPoints.Count; ++j)
+                        {
+                            if(connections[i].inPoint == n.inPoints[j])
+                            {
+                                connectionToRemove.Add(connections[i]);
+                            }
+                        }
+                    }
+
+                    if(n.outPoints!= null)
+                    {
+                        for(int j = 0; j<n.outPoints.Count; ++j)
+                        {
+                            if(connections[i].outPoint == n.outPoints[j])
+                            {
+                                connectionToRemove.Add(connections[i]);
+                            }
+                        }
+                    }
+                }
+
+                for(int i = 0; i<connectionToRemove.Count; ++i)
+                {
+                    connections.Remove(connectionToRemove[i]);
+                }
+
+                connectionToRemove = null;
+            }
+
+            if(selectedNode == n)
+            {
+                selectedNode = null;
+            }
+
+            nodes.Remove(n);
+        }
+
+        private void OnClickOutPoint(ConnectionPoint outPoint)
+        {
+            selectedOutPoint = outPoint;
+            if (selectedInPoint != null)
+            {
+                if (selectedOutPoint.node != selectedInPoint.node)
+                {
+                    CreateConnection();
+                    ClearConnectionSelection();
+                }
+                else
+                {
+                    ClearConnectionSelection();
+                }
+            }
+        }
+        private void OnClickInPoint(ConnectionPoint inPoint)
+        {
+            selectedInPoint = inPoint;
+
+            if (selectedOutPoint != null)
+            {
+                if (selectedOutPoint.node != selectedInPoint.node)
+                {
+                    CreateConnection();
+                    ClearConnectionSelection();
+                }
+                else
+                {
+                    ClearConnectionSelection();
+
+                }
+            }
+        }
+        private void OnClickRemoveConnection(NodeConnection connection)
+        {
+
+            connection.inPoint.connections.Clear();
+            connection.outPoint.connections.Clear();
+
+            connections.Remove(connection);
+        }
+
+        private void CreateConnection()
+        {
+            if (connections == null)
+            {
+                connections = new List<NodeConnection>();
+            }
+
+            NodeConnection con = new NodeConnection(selectedInPoint, selectedOutPoint, OnClickRemoveConnection);
+
+            if (selectedInPoint != null && selectedOutPoint != null)
+            {
+                selectedInPoint.connections.Add(con);
+                selectedOutPoint.connections.Add(con);
+
+                selectedOutPoint.node.Compute();
+            }
+
+            connections.Add(con);
+        }
+
+        private void ClearConnectionSelection()
+        {
+            selectedOutPoint = null;
+            selectedInPoint = null;
+        }
+
+        public GameObject GetPreviewObj()
+        {
+            return previewObj;
         }
 
         void ProcessPreviewEvents(Event e)
@@ -147,10 +434,6 @@ namespace PTG
                             previewObj.transform.Rotate(Vector3.right, -rotY, Space.World);
 
                             Repaint();
-                        }
-                        else
-                        {
-                            //OnDrag(e.delta);
                         }
                     }
                     break;
