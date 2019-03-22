@@ -29,64 +29,106 @@ public static class Noise
     public struct FractalSettings
     {
         public int seed;
-        public float octaves;
+        public int octaves;
         public float lacunarity;
-        public float frquency;
+        public float frequency;
         public float persistance;
+        public FastNoise.FractalType fractalType;
+        public FastNoise.NoiseType noiseType;
 
-        public FractalSettings(int seed, float octaves, float lacunarity, float frequency, float persistance)
+        public FractalSettings(int seed, int octaves, float lacunarity, float frequency, float persistance, FastNoise.FractalType fractalType, FastNoise.NoiseType noiseType)
         {
             this.seed = seed;
             this.octaves = octaves;
             this.lacunarity = lacunarity;
-            this.frquency = frequency;
+            this.frequency = frequency;
             this.persistance = persistance;
+            this.fractalType = fractalType;
+            this.noiseType = noiseType;
         }
     }
     
-    public static float fBM(float x, float y, FractalSettings settings)
+    /*public static Color[] PerlinFractal(Vector2Int ressolution, FractalSettings settings, float boundings)
     {
-        x *= settings.frquency;
-        y *= settings.frquency;
+        return TextureNoise(ressolution, FractalFunc, settings, boundings); 
+    }*/
 
-        int mSeed = settings.seed;
-        float total = Utils.PerlinNoise(mSeed, x, y);
-        float amplitude = 1;
-
-        for(int i = 1; i < settings.octaves; i++)
-        {
-            x *= settings.lacunarity;
-            y *= settings.lacunarity;
-
-            amplitude *= settings.persistance;
-
-            total += Utils.PerlinNoise(++mSeed, x, y) * amplitude;
-        }
-
-        return total;
-    }
-
-    public static Color[] Fractal(Vector2Int ressolution, FractalSettings settings, FractalType type)
+    public static Color[] SimplexFractal(Vector2Int ressolution, FractalSettings settings)
     {
-        return TextureNoise(ressolution, BrownianFunc, settings); 
+        return TextureNoise(ressolution, SimplexFractalFunc, settings);
     }
-
-    private static void BrownianFunc(Vector2Int ressolution, ref Color[] outPixels, params object[] parameters)
+    private static void SimplexFractalFunc(Vector2Int ressolution, ref Color[] outPixels, params object[] parameters)
     {
         if (outPixels != null)
         {
             FractalSettings settings = (FractalSettings)parameters[0];
-            for (int x = 0; x < ressolution.x; x++)
+            FastNoise noise = new FastNoise();
+            noise.SetFractalOctaves(settings.octaves);
+            noise.SetFractalGain(settings.persistance);
+            noise.SetFractalLacunarity(settings.lacunarity);
+            noise.SetSeed(settings.seed);
+            noise.SetFrequency(settings.frequency);
+            noise.SetFractalType(settings.fractalType);
+            noise.SetNoiseType(settings.noiseType);
+
+            float minColor = 1f;
+            float maxColor = 0f;
+            Color newColor; 
+
+            for (int y = 0; y < ressolution.y; y++)
             {
-                for (int y = 0; y < ressolution.y; y++)
+                for (int x = 0; x < ressolution.x; x++)
                 {
-                    float value = fBM(x,y,settings);
-                    outPixels[GetIndex(x, y, ressolution.x, ressolution.y)] = Color.Lerp(Color.black, Color.white, value);
+                    float u = (float)x / (float)ressolution.x;
+                    float v = (float)y / ressolution.y;
+
+                    float noise00 = noise.GetNoise(x, y) * 0.5f + 0.5f;
+                    float noise01 = noise.GetNoise(x, y + ressolution.y) * 0.5f + 0.5f;
+                    float noise10 = noise.GetNoise(x + ressolution.x, y) * 0.5f + 0.5f;
+                    float noise11 = noise.GetNoise(x + ressolution.x, y + ressolution.y) * 0.5f + 0.5f;
+
+                    float totalNoise = u * v * noise00 + u * (1 - v) * noise01 + (1 - u) * v * noise10 + (1 - u) * (1 - v) * noise11;
+
+                    float totalValue = (int)(256 * totalNoise) + 50;
+                    float r = Mathf.Clamp((int)noise00, 0, 255);
+                    float g = Mathf.Clamp(totalValue, 0, 255);
+                    float b = Mathf.Clamp(totalValue + 50, 0, 255);
+
+                    float value = (r + g + b) / (3 * 255.0f);
+
+                    float colValue = value;
+                    if (minColor > colValue) minColor = colValue;
+                    if (maxColor < colValue) maxColor = colValue;
+                    newColor = new Color(colValue, colValue, colValue, 1);
+                    outPixels[GetIndex(x, y, ressolution.x, ressolution.y)] = newColor;
+                 
+
+                }
+            }
+
+            for(int y = 0;y<ressolution.y;y++)
+            {
+                for(int x = 0; x<ressolution.x; x++)
+                {
+                    newColor = outPixels[GetIndex(x, y, ressolution.x, ressolution.y)];
+                    float colValue = newColor.r;
+                    colValue = Map(colValue, minColor, maxColor, 0, 1);
+                    newColor.r = colValue;
+                    newColor.g = colValue;
+                    newColor.b = colValue;
+
+                    outPixels[GetIndex(x, y, ressolution.x, ressolution.y)] = newColor;
+
                 }
             }
         }
     }
-    
+
+    private static float Map(float value, float originalMin, float originalMax, float targetMin, float targetMax)
+    {
+        return (value - originalMin) * (targetMax - targetMin) / (originalMax - originalMin) + targetMin;
+    }
+  
 
     #endregion
 }

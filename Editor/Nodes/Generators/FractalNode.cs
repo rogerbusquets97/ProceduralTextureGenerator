@@ -11,8 +11,7 @@ namespace PTG
         ConnectionPoint outPoint;
         Color[] noisePixels;
         Noise.FractalSettings settings;
-        Noise.FractalType type;
-
+        
         public FractalNode(Vector2 position, float width, float height, GUIStyle inPointStyle, GUIStyle outPointStyle, Action<ConnectionPoint> OnClickInPoint, Action<ConnectionPoint> OnClickOutPoint, Action<NodeBase> OnClickRemoveNode, NodeEditorWindow editor)
         {
             title = "Fractal Noise";
@@ -26,7 +25,7 @@ namespace PTG
             ressolution = new Vector2Int(texture.width, texture.height);
             noisePixels = texture.GetPixels();
 
-            if(outPoints == null)
+            if (outPoints == null)
             {
                 outPoints = new List<ConnectionPoint>();
             }
@@ -35,15 +34,15 @@ namespace PTG
 
             OnRemoveNode = OnClickRemoveNode;
 
-            settings = new Noise.FractalSettings(1337, 8, 2f, 0.01f, 0.5f);
-            type = Noise.FractalType.Brownian;
+            settings = new Noise.FractalSettings(1337, 8, 2f, 0.008f, 0.5f, FastNoise.FractalType.FBM, FastNoise.NoiseType.SimplexFractal);
+
 
             StartComputeThread(true);
         }
 
         public override float GetValue(int x, int y)
         {
-            return Noise.fBM(x, y, settings);
+            return 0;
         }
         public override void Draw()
         {
@@ -64,7 +63,7 @@ namespace PTG
             {
                 lock(door)
                 {
-                    noisePixels = Noise.Fractal(ressolution, settings, type);
+                    noisePixels = Noise.SimplexFractal(ressolution, settings);
                 }
             }
 
@@ -76,6 +75,9 @@ namespace PTG
                     texture.wrapMode = TextureWrapMode.Clamp;
                     texture.Apply();
                     editor.Repaint();
+
+                    System.IO.File.WriteAllBytes("Assets/Diffuse.png", texture.EncodeToPNG());
+                    AssetDatabase.Refresh();
                 }
 
                 if (outPoint.connections != null)
