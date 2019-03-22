@@ -26,7 +26,7 @@ namespace PTG
         public List<Action> MainThreadActions = new List<Action>();
         public Action<NodeBase> OnRemoveNode;
 
-        Texture2D texture;
+        public Texture2D texture;
 
         virtual public float GetValue(int x, int y) { return 0; }
 
@@ -138,6 +138,8 @@ namespace PTG
                         return true;
                     }
                     break;
+
+                    
             }
             return false;
         }
@@ -145,6 +147,7 @@ namespace PTG
         {
             GenericMenu genericMenu = new GenericMenu();
             genericMenu.AddItem(new GUIContent("Remove Node"), false, OnClickRemoveNode);
+            genericMenu.AddItem(new GUIContent("Preview Texture"), false, OnPreviewTexture);
             genericMenu.ShowAsContext();
         }
 
@@ -153,6 +156,19 @@ namespace PTG
             if(OnRemoveNode!= null)
             {
                 OnRemoveNode(this);
+            }
+        }
+
+        public virtual void OnPreviewTexture()
+        {
+            PreviewTexture win = (PreviewTexture)PreviewTexture.GetWindow(typeof(PreviewTexture), false, title);
+            win.autoRepaintOnSceneChange = true;
+            win.minSize = new Vector2(256, 256);
+            win.maxSize = new Vector2(256, 256);
+
+            if (texture != null)
+            {
+                win.texture = this.texture;
             }
         }
     }

@@ -9,7 +9,6 @@ namespace PTG
     public class FractalNode : NodeBase
     {
         ConnectionPoint outPoint;
-        Texture2D texture;
         Color[] noisePixels;
         Noise.FractalSettings settings;
         Noise.FractalType type;
@@ -36,12 +35,7 @@ namespace PTG
 
             OnRemoveNode = OnClickRemoveNode;
 
-            settings.octaves = 7;
-            settings.offsetx = 0;
-            settings.offsety = 0;
-            settings.persistance = 3;
-            settings.Xscale = 0.1f;
-            settings.Yscale = 0.1f;
+            settings = new Noise.FractalSettings(1337, 8, 2f, 0.01f, 0.5f);
             type = Noise.FractalType.Brownian;
 
             StartComputeThread(true);
@@ -51,13 +45,16 @@ namespace PTG
         {
             return Noise.fBM(x, y, settings);
         }
-
         public override void Draw()
         {
             base.Draw();
             GUILayout.BeginArea(rect);
             //Sliders
             //Texture
+            if(texture!=null)
+            {
+                GUI.DrawTexture(new Rect((rect.width / 4) - 15, (rect.height / 4) - 8, rect.width - 20, rect.height - 20), texture);
+            }
             GUILayout.EndArea();
         }
 

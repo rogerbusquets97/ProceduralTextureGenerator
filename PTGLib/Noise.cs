@@ -4,6 +4,8 @@ using UnityEngine;
 
 public static class Noise
 {
+    public enum FractalType { Brownian, Ridged, Billow };
+    public enum InterpolationType { Linear, Hermite, Quintic};
     private delegate void NoiseMethod(Vector2Int ressolution, ref Color[] outPixels, params object[] parameters);
 
     private static Color[] TextureNoise(Vector2Int ressolution, NoiseMethod method, params object[] parameters)
@@ -26,30 +28,42 @@ public static class Noise
     #region Fractals
     public struct FractalSettings
     {
-        public float Xscale;
-        public float Yscale;
-        public int octaves;
+        public int seed;
+        public float octaves;
+        public float lacunarity;
+        public float frquency;
         public float persistance;
-        public int offsetx;
-        public int offsety;
+
+        public FractalSettings(int seed, float octaves, float lacunarity, float frequency, float persistance)
+        {
+            this.seed = seed;
+            this.octaves = octaves;
+            this.lacunarity = lacunarity;
+            this.frquency = frequency;
+            this.persistance = persistance;
+        }
     }
-    public enum FractalType { Brownian, Ridged, Billow};
+    
     public static float fBM(float x, float y, FractalSettings settings)
     {
-        float total = 0;
-        float frequency = 1;
-        float amplitude = 1;
-        float maxValue = 0;
+        x *= settings.frquency;
+        y *= settings.frquency;
 
-        for(int i = 0; i<settings.octaves; i++)
+        int mSeed = settings.seed;
+        float total = Utils.PerlinNoise(mSeed, x, y);
+        float amplitude = 1;
+
+        for(int i = 1; i < settings.octaves; i++)
         {
-            total += Mathf.PerlinNoise((x) * frequency, (y) * frequency) * amplitude;
-            maxValue += amplitude;
+            x *= settings.lacunarity;
+            y *= settings.lacunarity;
+
             amplitude *= settings.persistance;
-            frequency *= 2;
+
+            total += Utils.PerlinNoise(++mSeed, x, y) * amplitude;
         }
 
-        return total / maxValue;
+        return total;
     }
 
     public static Color[] Fractal(Vector2Int ressolution, FractalSettings settings, FractalType type)
@@ -59,7 +73,6 @@ public static class Noise
 
     private static void BrownianFunc(Vector2Int ressolution, ref Color[] outPixels, params object[] parameters)
     {
-        Debug.Log(ressolution);
         if (outPixels != null)
         {
             FractalSettings settings = (FractalSettings)parameters[0];
@@ -67,7 +80,7 @@ public static class Noise
             {
                 for (int y = 0; y < ressolution.y; y++)
                 {
-                    float value = fBM((x+settings.offsetx) * settings.Xscale, (y+settings.offsety) * settings.Yscale, settings);
+                    float value = fBM(x,y,settings);
                     outPixels[GetIndex(x, y, ressolution.x, ressolution.y)] = Color.Lerp(Color.black, Color.white, value);
                 }
             }
