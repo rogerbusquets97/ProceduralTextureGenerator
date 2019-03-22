@@ -11,6 +11,7 @@ namespace PTG
         ConnectionPoint outPoint;
         Color[] noisePixels;
         Noise.FractalSettings settings;
+        FastNoise noise;
         
         public FractalNode(Vector2 position, float width, float height, GUIStyle inPointStyle, GUIStyle outPointStyle, Action<ConnectionPoint> OnClickInPoint, Action<ConnectionPoint> OnClickOutPoint, Action<NodeBase> OnClickRemoveNode, NodeEditorWindow editor)
         {
@@ -34,15 +35,15 @@ namespace PTG
 
             OnRemoveNode = OnClickRemoveNode;
 
-            settings = new Noise.FractalSettings(1337, 8, 2f, 0.008f, 0.5f, FastNoise.FractalType.FBM, FastNoise.NoiseType.SimplexFractal);
-
+            settings = new Noise.FractalSettings(1337, 8, 2f, 0.01f, 0.5f, FastNoise.FractalType.FBM, FastNoise.NoiseType.SimplexFractal);
+            noise = new FastNoise();
 
             StartComputeThread(true);
         }
 
         public override float GetValue(int x, int y)
         {
-            return 0;
+            return Noise.GetSingleFractal(x, y, ressolution, settings, noise);
         }
         public override void Draw()
         {
@@ -63,7 +64,7 @@ namespace PTG
             {
                 lock(door)
                 {
-                    noisePixels = Noise.SimplexFractal(ressolution, settings);
+                    noisePixels = Noise.Fractal(ressolution, settings,noise);
                 }
             }
 
