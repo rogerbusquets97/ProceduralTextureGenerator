@@ -46,6 +46,8 @@ public static class Noise
             this.fractalType = fractalType;
             this.noiseType = noiseType;
         }
+        
+       
     }
     
     /*public static Color[] PerlinFractal(Vector2Int ressolution, FractalSettings settings, float boundings)

@@ -9,7 +9,7 @@ namespace PTG
 {
     public enum NodeType { None = 0, Fractal}
 
-    public class NodeBase
+    public class NodeBase : ScriptableObject
     {
         public Vector2Int ressolution;
         public Rect rect;
@@ -29,7 +29,7 @@ namespace PTG
         public Texture2D texture;
 
         virtual public float GetValue(int x, int y) { return 0; }
-
+       
         public Texture2D GetTexture()
         {
             return texture;
@@ -51,6 +51,11 @@ namespace PTG
         public virtual void Draw()
         {
             GUI.Box(rect, title);
+        }
+
+        public virtual void DrawInspector()
+        {
+
         }
 
         public virtual void DrawInOutPoints()
@@ -156,6 +161,7 @@ namespace PTG
             if(OnRemoveNode!= null)
             {
                 OnRemoveNode(this);
+                DestroyImmediate(texture);
             }
         }
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using System;
 
 namespace PTG
 {
@@ -31,6 +32,8 @@ namespace PTG
         float maxFOV = 150f;
         float sensitivity = 10f;
         float rotSpeed = 20f;
+
+        public InspectorWindow inspector;
 
         [MenuItem("Tools/Procedural Texture Generator")]
         private static void LaunchEditor()
@@ -72,6 +75,10 @@ namespace PTG
 
             var folder = System.IO.Directory.CreateDirectory("./Tmp");
             AssetDatabase.Refresh();
+
+             inspector = (InspectorWindow)EditorWindow.GetWindow(typeof(InspectorWindow), false, "PTG Inspector");
+            inspector.autoRepaintOnSceneChange = true;
+            inspector.minSize = new Vector2(100,500);
         }
 
         private void OnDisable()
@@ -83,6 +90,11 @@ namespace PTG
                 FileUtil.DeleteFileOrDirectory("./Tmp");
             }
             AssetDatabase.Refresh();
+
+            for(int i = 0; i<nodes.Count; i++)
+            {
+                OnClickRemoveNode(nodes[i]);
+            }
         }
 
         private void OnGUI()
@@ -113,6 +125,7 @@ namespace PTG
         public void SetSelectedNode(NodeBase n)
         {
             selectedNode = n;
+            inspector.node = n;
         }
 
         private void DrawNodes()
@@ -338,9 +351,11 @@ namespace PTG
             if(selectedNode == n)
             {
                 selectedNode = null;
+                inspector.name = null;
             }
 
             nodes.Remove(n);
+            DestroyImmediate(n);
         }
 
         private void OnClickOutPoint(ConnectionPoint outPoint)
