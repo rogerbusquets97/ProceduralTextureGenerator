@@ -33,7 +33,6 @@ namespace PTG
         float sensitivity = 10f;
         float rotSpeed = 20f;
 
-        public InspectorWindow inspector;
 
         [MenuItem("Tools/Procedural Texture Generator")]
         private static void LaunchEditor()
@@ -75,10 +74,6 @@ namespace PTG
 
             var folder = System.IO.Directory.CreateDirectory("./Tmp");
             AssetDatabase.Refresh();
-
-             inspector = (InspectorWindow)EditorWindow.GetWindow(typeof(InspectorWindow), false, "PTG Inspector");
-            inspector.autoRepaintOnSceneChange = true;
-            inspector.minSize = new Vector2(100,500);
         }
 
         private void OnDisable()
@@ -95,6 +90,8 @@ namespace PTG
             {
                 OnClickRemoveNode(nodes[i]);
             }
+
+          
         }
 
         private void OnGUI()
@@ -125,7 +122,7 @@ namespace PTG
         public void SetSelectedNode(NodeBase n)
         {
             selectedNode = n;
-            inspector.node = n;
+            Selection.activeObject = n;
         }
 
         private void DrawNodes()
@@ -300,14 +297,30 @@ namespace PTG
             genericMenu.ShowAsContext();
         }
 
+        /*[MenuItem("PTG/Create/Fractal")]
+        void CreateFractal()
+        {
+            FractalNode n = FractalNode.CreateInstance<FractalNode>();
+            n.Init(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
+            nodes.Add(n);
+        }*/
+
         private void OnClickAddNode(Vector2 mousePosition, NodeType type)
         {
             switch(type)
             {
                 case NodeType.Fractal:
-                    nodes.Add(new FractalNode(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this));
+                    FractalNode n = FractalNode.CreateInstance<FractalNode>();
+                    n.Init(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
+                    nodes.Add(n);
+                    Selection.activeObject = n;
                     break;
             }
+        }
+
+        public NodeBase GetSelectedNode()
+        {
+            return selectedNode;
         }
 
         private void OnClickRemoveNode(NodeBase n)
@@ -351,7 +364,6 @@ namespace PTG
             if(selectedNode == n)
             {
                 selectedNode = null;
-                inspector.name = null;
             }
 
             nodes.Remove(n);

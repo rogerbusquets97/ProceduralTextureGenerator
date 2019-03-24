@@ -14,22 +14,32 @@ namespace PTG
         FractalNoiseType noiseType;
         FractalNoiseType lastNoiseType;
         Noise.FractalSettings settings;
-        Noise.FractalSettings lastSettings; 
+        Noise.FractalSettings lastSettings;
         FastNoise noise;
-        
-        public FractalNode(Vector2 position, float width, float height, GUIStyle inPointStyle, GUIStyle outPointStyle, Action<ConnectionPoint> OnClickInPoint, Action<ConnectionPoint> OnClickOutPoint, Action<NodeBase> OnClickRemoveNode, NodeEditorWindow editor)
+
+        public FractalNode()
         {
             title = "Fractal Noise";
+            door = new object();
+
+            noiseType = FractalNoiseType.Simplex;
+            lastNoiseType = noiseType;
+            settings = new Noise.FractalSettings(1337, 5, 2f, 0.01f, 0.5f, FastNoise.FractalType.FBM, FastNoise.NoiseType.SimplexFractal);
+            lastSettings = settings;
+            noise = new FastNoise();
+        }
+
+        private void OnEnable()
+        {
+            ressolution = new Vector2Int(256, 256);
+            texture = new Texture2D(ressolution.x, ressolution.y, TextureFormat.ARGB32, false);
+            noisePixels = texture.GetPixels();
+        }
+        public void Init(Vector2 position, float width, float height, GUIStyle inPointStyle, GUIStyle outPointStyle, Action<ConnectionPoint> OnClickInPoint, Action<ConnectionPoint> OnClickOutPoint, Action<NodeBase> OnClickRemoveNode, NodeEditorWindow editor)
+        {
             rect = new Rect(position.x, position.y, width, height);
             this.editor = editor;
             outPoint = new ConnectionPoint(this, ConnectionType.Out, outPointStyle, OnClickOutPoint);
-
-            door = new object();
-            ressolution = new Vector2Int(256, 256);
-            texture = new Texture2D(ressolution.x, ressolution.y, TextureFormat.ARGB32, false);
-            ressolution = new Vector2Int(texture.width, texture.height);
-            noisePixels = texture.GetPixels();
-
             if (outPoints == null)
             {
                 outPoints = new List<ConnectionPoint>();
@@ -39,16 +49,9 @@ namespace PTG
 
             OnRemoveNode = OnClickRemoveNode;
 
-            noiseType = FractalNoiseType.Simplex;
-            lastNoiseType = noiseType;
-            settings = new Noise.FractalSettings(1337, 5, 2f, 0.01f, 0.5f, FastNoise.FractalType.FBM, FastNoise.NoiseType.SimplexFractal);
-            lastSettings = settings;
-            noise = new FastNoise();
-
             StartComputeThread(true);
         }
 
-       
         public override float GetValue(int x, int y)
         {
             return Noise.GetSingleFractal(x, y, ressolution, settings, noise);
