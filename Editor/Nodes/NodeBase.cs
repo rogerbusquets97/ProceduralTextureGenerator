@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace PTG
 {
-    public enum NodeType { None = 0, Fractal, Cellular}
+    public enum NodeType { None = 0, Fractal, Cellular, Blend}
 
     public class NodeBase : ScriptableObject
     {

@@ -11,7 +11,7 @@ namespace PTG
         public Rect rect;
         public ConnectionType type;
         public GUIStyle style;
-        public NodeBase node;
+        public NodeBase node = null;
 
         public List<NodeConnection> connections = null;
 

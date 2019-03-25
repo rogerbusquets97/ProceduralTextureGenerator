@@ -295,6 +295,7 @@ namespace PTG
             GenericMenu genericMenu = new GenericMenu();
             genericMenu.AddItem(new GUIContent("Generators/Fractal Noise"), false, () => OnClickAddNode(mousePosition,NodeType.Fractal));
             genericMenu.AddItem(new GUIContent("Generators/Cellular Noise"), false, () => OnClickAddNode(mousePosition, NodeType.Cellular));
+            genericMenu.AddItem(new GUIContent("Operators/Blend"),false, ()=> OnClickAddNode(mousePosition,NodeType.Blend));
             genericMenu.ShowAsContext();
         }
 
@@ -313,6 +314,12 @@ namespace PTG
                     cellular.Init(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
                     nodes.Add(cellular);
                     Selection.activeObject = cellular;
+                    break;
+                case NodeType.Blend:
+                    BlendNode blend = BlendNode.CreateInstance<BlendNode>();
+                    blend.Init(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
+                    nodes.Add(blend);
+                    Selection.activeObject = blend;
                     break;
             }
         }
@@ -426,7 +433,7 @@ namespace PTG
                 selectedInPoint.connections.Add(con);
                 selectedOutPoint.connections.Add(con);
 
-                selectedOutPoint.node.Compute();
+                selectedOutPoint.node.StartComputeThread(true);
             }
 
             connections.Add(con);

@@ -20,15 +20,15 @@ public static class Filter
         return outPixels;
     }
 
-    private static int GetIndex(int x, int y, int width, int height)
+    public static int GetIndex(int x, int y, int width, int height)
     {
         int i = Mathf.Clamp(x, 0, width - 1) + Mathf.Clamp(y, 0, height - 1) * width;
         return i;
     }
 
-    public static Color[] Blend(Vector2Int ressolution, ref Color[]Input01, ref Color[]Input02, BlendMode mode, Color[]mask = null)
+    public static Color[] Blend(Vector2Int ressolution, Color[]Input01,  Color[]Input02, BlendMode mode, Color[]mask = null)
     {
-        return TextureFilter(ressolution, BlendFunc, Input01, Input02, mode);
+        return TextureFilter(ressolution, BlendFunc, Input01, Input02, mode, mask);
     }
 
     private static void BlendFunc(Vector2Int ressolution, ref Color[] outPixels, params object[] parameters)
@@ -41,17 +41,16 @@ public static class Filter
         for(int y = 0; y< ressolution.y; y++)
         {
             for(int x = 0; x<ressolution.x; x++)
-            {
-                Color newColor = new Color();
-                if(mask== null)
-                    newColor = GetSingleBlendValue(ressolution, x, y, img1, img2, mode);
+            { 
+                if(mask == null)
+                    outPixels[GetIndex(x,y,ressolution.x,ressolution.y)] = GetSingleBlendValue(ressolution, x, y, img1, img2, mode);
                 else
-                    newColor = GetSingleBlendValue(ressolution, x, y, img1, img2, mode, mask);
+                    outPixels[GetIndex(x, y, ressolution.x, ressolution.y)] = GetSingleBlendValue(ressolution, x, y, img1, img2, mode, mask);
             }
         }
     }
 
-    private static Color GetSingleBlendValue(Vector2Int ressolution, int x, int y, Color[]Input01, Color[]Input02, BlendMode mode, Color[]mask = null)
+    public static Color GetSingleBlendValue(Vector2Int ressolution, int x, int y, Color[]Input01, Color[]Input02, BlendMode mode, Color[]mask = null)
     {
         switch(mode)
         {
