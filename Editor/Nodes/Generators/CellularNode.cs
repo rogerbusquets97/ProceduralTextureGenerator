@@ -47,7 +47,7 @@ namespace PTG
             StartComputeThread(true);
         }
 
-        public override float GetValue(int x, int y)
+        public override object GetValue(int x, int y)
         {
             return Noise.GetSingleCellular(x, y, ressolution, settings, noise);
         }

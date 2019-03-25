@@ -28,7 +28,7 @@ namespace PTG
 
         public Texture2D texture;
 
-        virtual public float GetValue(int x, int y) { return 0; }
+        virtual public object GetValue(int x, int y) { return 0; }
        
         public Texture2D GetTexture()
         {

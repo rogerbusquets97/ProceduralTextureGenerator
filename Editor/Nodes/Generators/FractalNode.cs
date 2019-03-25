@@ -52,7 +52,7 @@ namespace PTG
             StartComputeThread(true);
         }
 
-        public override float GetValue(int x, int y)
+        public override object GetValue(int x, int y)
         {
             return Noise.GetSingleFractal(x, y, ressolution, settings, noise);
         }
