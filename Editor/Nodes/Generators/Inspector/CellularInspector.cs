@@ -5,20 +5,19 @@ using UnityEditor;
 
 namespace PTG
 {
-    [CustomEditor(typeof(FractalNode))]
-    public class NodeInspector : Editor
+    [CustomEditor(typeof(CellularNode))]
+    public class CellularInspector : Editor
     {
-        FractalNode n = null;
+        CellularNode n = null;
 
         public override void OnInspectorGUI()
         {
-            n = (FractalNode)target;
-            if (n!= null)
+            n = (CellularNode)target;
+            if (n != null)
             {
                 n.DrawInspector();
             }
-  
         }
-        
     }
+
 }

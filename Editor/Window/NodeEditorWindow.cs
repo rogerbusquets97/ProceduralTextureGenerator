@@ -294,26 +294,25 @@ namespace PTG
         {
             GenericMenu genericMenu = new GenericMenu();
             genericMenu.AddItem(new GUIContent("Generators/Fractal Noise"), false, () => OnClickAddNode(mousePosition,NodeType.Fractal));
+            genericMenu.AddItem(new GUIContent("Generators/Cellular Noise"), false, () => OnClickAddNode(mousePosition, NodeType.Cellular));
             genericMenu.ShowAsContext();
         }
-
-        /*[MenuItem("PTG/Create/Fractal")]
-        void CreateFractal()
-        {
-            FractalNode n = FractalNode.CreateInstance<FractalNode>();
-            n.Init(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
-            nodes.Add(n);
-        }*/
 
         private void OnClickAddNode(Vector2 mousePosition, NodeType type)
         {
             switch(type)
             {
                 case NodeType.Fractal:
-                    FractalNode n = FractalNode.CreateInstance<FractalNode>();
-                    n.Init(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
-                    nodes.Add(n);
-                    Selection.activeObject = n;
+                    FractalNode fractal = FractalNode.CreateInstance<FractalNode>();
+                    fractal.Init(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
+                    nodes.Add(fractal);
+                    Selection.activeObject = fractal;
+                    break;
+                case NodeType.Cellular:
+                    CellularNode cellular  = CellularNode.CreateInstance<CellularNode>();
+                    cellular.Init(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
+                    nodes.Add(cellular);
+                    Selection.activeObject = cellular;
                     break;
             }
         }
