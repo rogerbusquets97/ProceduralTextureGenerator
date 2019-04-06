@@ -1,11 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System;
 using UnityEditor;
+using System;
+
 namespace PTG
 {
-    public class LevelsNode : NodeBase
+    public class NormalNode : NodeBase
     {
         Color[] outPixels;
         Color[] source;
@@ -13,21 +14,22 @@ namespace PTG
         ConnectionPoint inPoint;
         ConnectionPoint outPoint;
 
-        Filter.LevelsData data;
-        Filter.LevelsData lastData;
+        float strength;
+        float lastStrength;
 
-        public LevelsNode()
+
+        public NormalNode()
         {
-            title = "Levels Node";
+            title = "Normal";
             door = new object();
-            data = new Filter.LevelsData(new Vector2(0, 1), new Vector2(0, 1));
-            lastData = data;
+            strength = 4f;
+            lastStrength = strength;
         }
 
         public void OnEnable()
         {
             ressolution = new Vector2Int(256, 256);
-            texture = new Texture2D(ressolution.x, ressolution.y, TextureFormat.ARGB32, false);
+            texture = new Texture2D(ressolution.x, ressolution.y);
             outPixels = texture.GetPixels();
         }
 
@@ -58,17 +60,15 @@ namespace PTG
         public override void StartComputeThread(bool selfCompute)
         {
             NodeBase n = null;
-            if(inPoint.connections.Count!= 0)
+            if(inPoint.connections.Count!=0)
             {
                 n = inPoint.connections[0].outPoint.node;
             }
-
-            if(n!= null)
+            if(n!=null)
             {
-                if(n.GetTexture() != null)
+                if(n.GetTexture()!= null)
                 {
                     source = n.GetTexture().GetPixels();
-
                     base.StartComputeThread(selfCompute);
                 }
             }
@@ -84,9 +84,9 @@ namespace PTG
             }
             GUILayout.EndArea();
 
-            if (lastData.inputLevels != data.inputLevels || lastData.outputLevels!=data.outputLevels)
+            if(lastStrength!= strength)
             {
-                lastData = data;
+                lastStrength = strength;
                 StartComputeThread(true);
             }
         }
@@ -95,28 +95,12 @@ namespace PTG
         {
             GUILayout.Space(10);
             GUILayout.BeginVertical("Box");
-            EditorGUILayout.MinMaxSlider("Input Levels", ref data.inputLevels.x, ref data.inputLevels.y, 0, 1);
-            EditorGUILayout.MinMaxSlider("Output Levels", ref data.outputLevels.x, ref data.outputLevels.y, 0, 1);
+            strength = EditorGUILayout.FloatField(strength, "Strength");
             GUILayout.EndVertical();
         }
 
         public override object GetValue(int x, int y)
         {
-            /*NodeBase n = null;
-            if (inPoint.connections.Count != 0)
-            {
-                n = inPoint.connections[0].outPoint.node;
-            }
-
-            if (n != null)
-            {
-                if (n.GetTexture() != null)
-                {
-                    source = n.GetTexture().GetPixels();
-                    return Filter.GetSingleLevelsValue(ressolution, x, y, source, data);
-                }
-            }*/
-
             return 0;
         }
 
@@ -126,32 +110,33 @@ namespace PTG
             {
                 lock(door)
                 {
-                    outPixels = Filter.Levels(ressolution, source, data);
+                    outPixels = Filter.Normal(ressolution, source, strength);
                 }
             }
 
             Action MainThreadAction = () =>
-           {
-               if (selfcompute)
-               {
-                   texture.SetPixels(outPixels);
-                   texture.wrapMode = TextureWrapMode.Clamp;
-                   texture.Apply();
-                   editor.Repaint();
-               }
+            {
+                if (selfcompute)
+                {
+                    texture.SetPixels(outPixels);
+                    texture.wrapMode = TextureWrapMode.Clamp;
+                    texture.Apply();
+                    editor.Repaint();
 
-               if (outPoint.connections != null)
-               {
-                   for (int i = 0; i < outPoint.connections.Count; i++)
-                   {
-                       outPoint.connections[i].inPoint.node.StartComputeThread(true);
-                   }
-               }
-           };
+                    System.IO.File.WriteAllBytes("Assets/Diffuse.png", texture.EncodeToPNG());
+                    AssetDatabase.Refresh();
+                }
+
+                if (outPoint.connections != null)
+                {
+                    for (int i = 0; i < outPoint.connections.Count; i++)
+                    {
+                        outPoint.connections[i].inPoint.node.StartComputeThread(true);
+                    }
+                }
+            };
 
             QueueMainThreadFunction(MainThreadAction);
-
-           
         }
     }
 }

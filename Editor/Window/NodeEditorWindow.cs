@@ -297,6 +297,7 @@ namespace PTG
             genericMenu.AddItem(new GUIContent("Generators/Cellular Noise"), false, () => OnClickAddNode(mousePosition, NodeType.Cellular));
             genericMenu.AddItem(new GUIContent("Operators/Blend"),false, ()=> OnClickAddNode(mousePosition,NodeType.Blend));
             genericMenu.AddItem(new GUIContent("Filters/Levels"), false, () => OnClickAddNode(mousePosition, NodeType.Levels));
+            genericMenu.AddItem(new GUIContent("Filters/Normal"), false, () => OnClickAddNode(mousePosition, NodeType.Normal));
 
 
             genericMenu.ShowAsContext();
@@ -329,6 +330,12 @@ namespace PTG
                     levels.Init(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
                     nodes.Add(levels);
                     Selection.activeObject = levels;
+                    break;
+                case NodeType.Normal:
+                    NormalNode normal = NormalNode.CreateInstance<NormalNode>();
+                    normal.Init(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
+                    nodes.Add(normal);
+                    Selection.activeObject = normal;
                     break;
             }
         }

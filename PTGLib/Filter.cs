@@ -122,5 +122,61 @@ public static class Filter
 
 
     #endregion
+    #region Height to Normal
+    public static Color[] Normal(Vector2Int ressolution, Color[] source, float strength)
+    {
+        return TextureFilter(ressolution, NormalFunc, source, strength);
+    }
+
+    private static void NormalFunc(Vector2Int ressolution, ref Color[] outPixels, params object[] parameters)
+    {
+        Color[] source = (Color[])parameters[0];
+        float strength = (float)parameters[1];
+
+        float xLeft, xRight, yUp, yDown, xDelta, yDelta;
+
+        int y = 0;
+        while (y < ressolution.y)
+        {
+
+            int x = 0;
+            while (x < ressolution.x)
+            {
+
+                if (x == 0)
+                    xLeft = source[GetIndex(x, y,ressolution.x,ressolution.y)].grayscale * strength;
+                else
+                    xLeft = source[GetIndex(x - 1, y,ressolution.x,ressolution.y)].grayscale * strength;
+
+                if (x == ressolution.x - 1)
+                    xRight = source[GetIndex(x, y,ressolution.x,ressolution.y)].grayscale * strength;
+                else
+                    xRight = source[GetIndex(x + 1, y,ressolution.x,ressolution.y)].grayscale * strength;
+
+                if (y == 0)
+                    yUp = source[GetIndex(x, y,ressolution.x, ressolution.y)].grayscale * strength;
+                else
+                    yUp = source[GetIndex(x, y - 1,ressolution.x,ressolution.y)].grayscale * strength;
+                if (y == ressolution.y - 1)
+                    yDown = source[GetIndex(x, y,ressolution.x,ressolution.y)].grayscale * strength;
+                else
+                    yDown = source[GetIndex(x, y + 1,ressolution.x,ressolution.y)].grayscale * strength;
+
+
+                xDelta = ((xLeft - xRight) + 1) * 0.5f;
+                yDelta = ((yUp - yDown) + 1) * 0.5f;
+
+
+                outPixels[GetIndex(x, y,ressolution.x,ressolution.y)] = new Color(xDelta, yDelta, 1.0f, yDelta);
+                x++;
+
+            }
+
+            y++;
+        }
+
+
+    }
+    #endregion
 
 }
