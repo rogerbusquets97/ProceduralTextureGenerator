@@ -35,8 +35,10 @@ public static class Noise
         public float persistance;
         public FastNoise.FractalType fractalType;
         public FastNoise.NoiseType noiseType;
+        public float XScale;
+        public float YScale;
 
-        public FractalSettings(int seed, int octaves, float lacunarity, float frequency, float persistance, FastNoise.FractalType fractalType, FastNoise.NoiseType noiseType)
+        public FractalSettings(int seed, int octaves, float lacunarity, float frequency, float persistance,float XScale, float YScale, FastNoise.FractalType fractalType, FastNoise.NoiseType noiseType)
         {
             this.seed = seed;
             this.octaves = octaves;
@@ -45,6 +47,8 @@ public static class Noise
             this.persistance = persistance;
             this.fractalType = fractalType;
             this.noiseType = noiseType;
+            this.XScale = XScale;
+            this.YScale = YScale;
         }
         
        
@@ -89,10 +93,10 @@ public static class Noise
         float u = (float)x / (float)ressolution.x;
         float v = (float)y / ressolution.y;
 
-        float noise00 = noise.GetNoise(x, y) * 0.5f + 0.5f;
-        float noise01 = noise.GetNoise(x, y + ressolution.y) * 0.5f + 0.5f;
-        float noise10 = noise.GetNoise(x + ressolution.x, y) * 0.5f + 0.5f;
-        float noise11 = noise.GetNoise(x + ressolution.x, y + ressolution.y) * 0.5f + 0.5f;
+        float noise00 = noise.GetNoise(x * settings.XScale, y*settings.YScale) * 0.5f + 0.5f;
+        float noise01 = noise.GetNoise(x*settings.XScale, y*settings.YScale + ressolution.y) * 0.5f + 0.5f;
+        float noise10 = noise.GetNoise(x*settings.XScale + ressolution.x, y*settings.YScale) * 0.5f + 0.5f;
+        float noise11 = noise.GetNoise(x*settings.XScale + ressolution.x, y*settings.YScale + ressolution.y) * 0.5f + 0.5f;
 
         float totalNoise = u * v * noise00 + u * (1 - v) * noise01 + (1 - u) * v * noise10 + (1 - u) * (1 - v) * noise11;
 

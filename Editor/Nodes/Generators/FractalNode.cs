@@ -24,7 +24,7 @@ namespace PTG
 
             noiseType = FractalNoiseType.Simplex;
             lastNoiseType = noiseType;
-            settings = new Noise.FractalSettings(1337, 5, 2f, 0.01f, 0.5f, FastNoise.FractalType.FBM, FastNoise.NoiseType.SimplexFractal);
+            settings = new Noise.FractalSettings(1337, 5, 2f, 0.01f, 0.5f,1f,1f, FastNoise.FractalType.FBM, FastNoise.NoiseType.SimplexFractal);
             lastSettings = settings;
             noise = new FastNoise();
         }
@@ -68,7 +68,7 @@ namespace PTG
 
             GUILayout.EndArea();
 
-            if(lastSettings.octaves!= settings.octaves || lastSettings.persistance!= settings.persistance|| lastSettings.seed!= settings.seed|| lastSettings.frequency!= settings.frequency||lastSettings.lacunarity!= settings.lacunarity||lastSettings.fractalType!= settings.fractalType)
+            if(lastSettings.octaves!= settings.octaves || lastSettings.persistance!= settings.persistance|| lastSettings.seed!= settings.seed|| lastSettings.frequency!= settings.frequency||lastSettings.lacunarity!= settings.lacunarity||lastSettings.fractalType!= settings.fractalType || lastSettings.XScale!= settings.XScale || lastSettings.YScale!= settings.YScale)
             {
                 lastSettings = settings;
                 StartComputeThread(true);
@@ -134,6 +134,16 @@ namespace PTG
             GUILayout.BeginVertical("Box");
             EditorGUILayout.LabelField("Persistance");
             settings.persistance = EditorGUILayout.FloatField(settings.persistance);
+            GUILayout.EndVertical();
+
+            GUILayout.BeginVertical("Box");
+            EditorGUILayout.LabelField("XScale");
+            settings.XScale = EditorGUILayout.FloatField(settings.XScale);
+            GUILayout.EndVertical();
+
+            GUILayout.BeginVertical("Box");
+            EditorGUILayout.LabelField("YScale");
+            settings.YScale = EditorGUILayout.FloatField(settings.YScale);
             GUILayout.EndVertical();
 
             GUILayout.BeginVertical("Box");

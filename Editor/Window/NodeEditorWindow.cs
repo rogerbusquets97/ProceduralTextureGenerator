@@ -296,6 +296,9 @@ namespace PTG
             genericMenu.AddItem(new GUIContent("Generators/Fractal Noise"), false, () => OnClickAddNode(mousePosition,NodeType.Fractal));
             genericMenu.AddItem(new GUIContent("Generators/Cellular Noise"), false, () => OnClickAddNode(mousePosition, NodeType.Cellular));
             genericMenu.AddItem(new GUIContent("Operators/Blend"),false, ()=> OnClickAddNode(mousePosition,NodeType.Blend));
+            genericMenu.AddItem(new GUIContent("Filters/Levels"), false, () => OnClickAddNode(mousePosition, NodeType.Levels));
+
+
             genericMenu.ShowAsContext();
         }
 
@@ -320,6 +323,12 @@ namespace PTG
                     blend.Init(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
                     nodes.Add(blend);
                     Selection.activeObject = blend;
+                    break;
+                case NodeType.Levels:
+                    LevelsNode levels = LevelsNode.CreateInstance<LevelsNode>();
+                    levels.Init(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
+                    nodes.Add(levels);
+                    Selection.activeObject = levels;
                     break;
             }
         }

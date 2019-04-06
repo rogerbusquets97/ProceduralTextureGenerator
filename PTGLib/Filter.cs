@@ -26,6 +26,7 @@ public static class Filter
         return i;
     }
 
+    #region Blend
     public static Color[] Blend(Vector2Int ressolution, Color[]Input01,  Color[]Input02, BlendMode mode, Color[]mask = null)
     {
         return TextureFilter(ressolution, BlendFunc, Input01, Input02, mode, mask);
@@ -73,6 +74,53 @@ public static class Filter
                 return Input01[GetIndex(x, y, ressolution.x, ressolution.y)];
         }
     }
+    #endregion
+    #region Levels
+    public struct LevelsData
+    {
+        public Vector2 inputLevels;
+        public Vector2 outputLevels;
 
+        public LevelsData(Vector2 input, Vector2 output)
+        {
+            this.inputLevels = input;
+            this.outputLevels = output;
+        }
+    }
+
+    public static Color[] Levels(Vector2Int ressolution, Color[] source, LevelsData data)
+    {
+        return TextureFilter(ressolution, LevelsFunc, source, data);
+    }
+
+    private static void LevelsFunc(Vector2Int ressolution, ref Color[] outPixels, params object[] parameters)
+    {
+        Color[] source = (Color[])parameters[0];
+        LevelsData data = (LevelsData)parameters[1];
+        for (int y = 0; y < ressolution.y; y++)
+        {
+            for (int x = 0; x < ressolution.x; x++)
+            {
+                outPixels[GetIndex(x, y, ressolution.x, ressolution.y)] = GetSingleLevelsValue(ressolution,x,y,source,data);
+            }
+        }
+    }
+
+    public static Color GetSingleLevelsValue(Vector2Int ressolution, int x, int y, Color[] source, LevelsData data)
+    {
+        float rvalue = (source[GetIndex(x, y,ressolution.x,ressolution.y)].r - data.inputLevels.x) / (data.inputLevels.y - data.inputLevels.x);
+        rvalue = (rvalue) * (data.outputLevels.y - data.outputLevels.x) + data.outputLevels.x;
+
+        float gvalue = (source[GetIndex(x, y,ressolution.x,ressolution.y)].g - data.inputLevels.x) / (data.inputLevels.y - data.inputLevels.x);
+        gvalue = (gvalue) * (data.outputLevels.y - data.outputLevels.x) + data.outputLevels.x;
+
+        float bvalue = (source[GetIndex(x, y, ressolution.x, ressolution.y)].b - data.inputLevels.x) / (data.inputLevels.y - data.inputLevels.x);
+        bvalue = (bvalue) * (data.outputLevels.y - data.outputLevels.x) + data.outputLevels.x;
+
+        return new Color(rvalue, gvalue, bvalue);
+    }
+
+
+    #endregion
 
 }

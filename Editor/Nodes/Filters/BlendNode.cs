@@ -104,11 +104,6 @@ namespace PTG
             {
                 GUI.DrawTexture(new Rect((rect.width / 4) - 15, (rect.height / 4) - 8, rect.width - 20, rect.height - 20), texture);
             }
-            else
-            {
-                Debug.Log("texture null");
-            }
-
             GUILayout.EndArea();
 
             if(lastMode != mode)
@@ -152,9 +147,6 @@ namespace PTG
                     texture.wrapMode = TextureWrapMode.Clamp;
                     texture.Apply();
                     editor.Repaint();
-
-                    System.IO.File.WriteAllBytes("Assets/Diffuse.png", texture.EncodeToPNG());
-                    AssetDatabase.Refresh();
                 }
 
                 if (outPoint.connections != null)
