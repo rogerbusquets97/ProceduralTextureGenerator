@@ -301,9 +301,8 @@ namespace PTG
             genericMenu.AddItem(new GUIContent("Filters/One Minus"), false, () => OnClickAddNode(mousePosition, NodeType.OneMinus));
             genericMenu.AddItem(new GUIContent("Generators/Flat Color"), false, () => OnClickAddNode(mousePosition, NodeType.Color));
             genericMenu.AddItem(new GUIContent("Filters/Mix"), false, () => OnClickAddNode(mousePosition, NodeType.Mix));
-
-
-
+            genericMenu.AddItem(new GUIContent("Operators/Mask Map"), false, () => OnClickAddNode(mousePosition, NodeType.MaskMap));
+            
             genericMenu.ShowAsContext();
         }
 
@@ -358,6 +357,12 @@ namespace PTG
                     mix.Init(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
                     nodes.Add(mix);
                     Selection.activeObject = mix;
+                    break;
+                case NodeType.MaskMap:
+                    MakeMaskMap map = MakeMaskMap.CreateInstance<MakeMaskMap>();
+                    map.Init(mousePosition, 100, 130, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
+                    nodes.Add(map);
+                    Selection.activeObject = map;
                     break;
             }
         }
