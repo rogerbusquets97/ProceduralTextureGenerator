@@ -298,6 +298,7 @@ namespace PTG
             genericMenu.AddItem(new GUIContent("Operators/Blend"),false, ()=> OnClickAddNode(mousePosition,NodeType.Blend));
             genericMenu.AddItem(new GUIContent("Filters/Levels"), false, () => OnClickAddNode(mousePosition, NodeType.Levels));
             genericMenu.AddItem(new GUIContent("Filters/Normal"), false, () => OnClickAddNode(mousePosition, NodeType.Normal));
+            genericMenu.AddItem(new GUIContent("Filters/One Minus"), false, () => OnClickAddNode(mousePosition, NodeType.OneMinus));
 
 
             genericMenu.ShowAsContext();
@@ -336,6 +337,12 @@ namespace PTG
                     normal.Init(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
                     nodes.Add(normal);
                     Selection.activeObject = normal;
+                    break;
+                case NodeType.OneMinus:
+                    MinusOneNode n = MinusOneNode.CreateInstance<MinusOneNode>();
+                    n.Init(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
+                    nodes.Add(n);
+                    Selection.activeObject = n;
                     break;
             }
         }

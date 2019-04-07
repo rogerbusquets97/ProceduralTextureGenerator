@@ -60,7 +60,10 @@ public static class Filter
             case BlendMode.Addition:
                 return Input01[GetIndex(x, y, ressolution.x, ressolution.y)] + Input02[GetIndex(x, y, ressolution.x, ressolution.y)];
             case BlendMode.Substraction:
-                return Input01[GetIndex(x, y, ressolution.x, ressolution.y)] - Input02[GetIndex(x, y, ressolution.x, ressolution.y)];
+                float Rvalue = Mathf.Clamp01(Input01[GetIndex(x, y,ressolution.x,ressolution.y)].r - Input02[GetIndex(x, y,ressolution.x,ressolution.y)].r);
+                float Gvalue = Mathf.Clamp01(Input01[GetIndex(x, y,ressolution.x,ressolution.y)].g - Input02[GetIndex(x, y,ressolution.x,ressolution.y)].g);
+                float Bvalue = Mathf.Clamp01(Input01[GetIndex(x, y,ressolution.x,ressolution.y)].b - Input02[GetIndex(x, y,ressolution.x,ressolution.y)].b);
+                return new Color(Rvalue, Gvalue, Bvalue);
             case BlendMode.Mask:
                 if(mask!=null)
                 {
@@ -175,6 +178,38 @@ public static class Filter
             y++;
         }
 
+
+    }
+    #endregion
+    #region OneMinus
+    public static Color[] OneMinus(Vector2Int ressolution, Color[] source)
+    {
+        return TextureFilter(ressolution, OneMinusFunc, source);
+    }
+    private static void OneMinusFunc(Vector2Int ressolution, ref Color[] outPixels, params object[] parameters)
+    {
+        Color[] source = (Color[])parameters[0];
+        for (int i = 0; i < ressolution.x; i++)
+        {
+            for (int j = 0; j < ressolution.y; j++)
+            {
+                outPixels[GetIndex(i, j, ressolution.x, ressolution.y)] = GetSingleOneMinus(ressolution, i, j, source);
+            }
+        }
+
+    }
+
+    public static Color GetSingleOneMinus(Vector2Int ressolution, int x, int y, Color[] source)
+    {
+        float Rvalue;
+        float Gvalue;
+        float Bvalue;
+
+        Rvalue = 1 - source[Filter.GetIndex(x, y, ressolution.x, ressolution.y)].r;
+        Gvalue = 1 - source[Filter.GetIndex(x, y, ressolution.x, ressolution.y)].g;
+        Bvalue = 1 - source[Filter.GetIndex(x, y, ressolution.x, ressolution.y)].b;
+
+        return new Color(Rvalue, Gvalue, Bvalue);
 
     }
     #endregion
