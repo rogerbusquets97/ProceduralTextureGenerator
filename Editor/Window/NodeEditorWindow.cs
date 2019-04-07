@@ -22,17 +22,6 @@ namespace PTG
         //GUI
         private GUIStyle inPointStyle;
         private GUIStyle outPointStyle;
-        // Preview Win
-        private Rect previewRect;
-        Camera previewCam;
-        GameObject camObj;
-        GameObject previewObj;
-
-        float minFOV = 15f;
-        float maxFOV = 150f;
-        float sensitivity = 10f;
-        float rotSpeed = 20f;
-
 
         [MenuItem("Tools/Procedural Texture Generator")]
         private static void LaunchEditor()
@@ -53,45 +42,14 @@ namespace PTG
             outPointStyle.border = new RectOffset(4, 4, 12, 12);
 
             nodes = new List<NodeBase>();
-
-            previewRect = new Rect(position.width - 300, position.height / 2, 300, position.height);
-
-            camObj = new GameObject();
-            camObj.SetActive(false);
-            camObj.transform.SetPositionAndRotation(new Vector3(0, 1000, 0), Quaternion.identity);
-            previewCam = camObj.AddComponent(typeof(Camera)) as Camera;
-            previewCam.backgroundColor = Color.black;
-            previewCam.clearFlags = CameraClearFlags.SolidColor;
-            camObj.hideFlags = HideFlags.HideAndDontSave;
-
-            previewObj = GameObject.CreatePrimitive(PrimitiveType.Plane);
-            previewObj.SetActive(false);
-            previewObj.transform.position = new Vector3(camObj.transform.position.x, camObj.transform.position.y, camObj.transform.position.z + 15);
-            previewObj.hideFlags = HideFlags.HideAndDontSave;
-
-            MeshRenderer renderer = previewObj.GetComponent<MeshRenderer>();
-            renderer.material = new Material(Shader.Find("HDRenderPipeline/Lit"));
-
-            var folder = System.IO.Directory.CreateDirectory("./Tmp");
-            AssetDatabase.Refresh();
         }
 
         private void OnDisable()
         {
-            DestroyImmediate(camObj);
-            DestroyImmediate(previewObj);
-            if (System.IO.Directory.Exists("./Tmp"))
-            {
-                FileUtil.DeleteFileOrDirectory("./Tmp");
-            }
-            AssetDatabase.Refresh();
-
             for(int i = 0; i<nodes.Count; i++)
             {
                 OnClickRemoveNode(nodes[i]);
             }
-
-          
         }
 
         private void OnGUI()
@@ -112,8 +70,6 @@ namespace PTG
         void DrawEditor()
         {
             BeginWindows();
-
-            DrawPreviewWindow();
             GUI.BringWindowToFront(0);
             DrawNodes();
             EndWindows();
@@ -224,33 +180,9 @@ namespace PTG
             Handles.color = Color.white;
             Handles.EndGUI();
         }
-
-        void DrawPreviewWindow()
-        {
-            previewRect.height = 300;
-            previewRect.x = position.width - 300;
-            previewRect.y = position.height - 300;
-            previewRect = GUI.Window(0, previewRect, DrawPreview, "Preview");
-        }
-        void DrawPreview(int unusedWindowId)
-        {
-            previewObj.SetActive(true);
-
-            previewRect.x = 0;
-            previewRect.y = 0 + 17;
-            previewRect.height -= 15;
-            previewCam.pixelRect = previewRect;
-
-
-            Handles.DrawCamera(previewCam.pixelRect, previewCam);
-
-            previewObj.SetActive(false);
-        }
-
         void ProcessEvents(Event e)
         {
             drag = Vector2.zero;
-            ProcessPreviewEvents(e);
 
             switch(e.type)
             {
@@ -268,10 +200,7 @@ namespace PTG
                 case EventType.MouseDrag:
                     if(e.button == 0)
                     {
-                        if(!previewRect.Contains(e.mousePosition))
-                        {
-                            OnDrag(e.delta);
-                        }
+                        OnDrag(e.delta);
                     }
                     break;
             }
@@ -486,44 +415,6 @@ namespace PTG
         {
             selectedOutPoint = null;
             selectedInPoint = null;
-        }
-
-        public GameObject GetPreviewObj()
-        {
-            return previewObj;
-        }
-
-        void ProcessPreviewEvents(Event e)
-        {
-            switch (e.type)
-            {
-                case EventType.MouseDrag:
-                    if (e.button == 0)
-                    {
-
-                        if (previewRect.Contains(e.mousePosition))
-                        {
-                            float rotX = e.delta.x * rotSpeed * Mathf.Deg2Rad;
-                            float rotY = e.delta.y * rotSpeed * Mathf.Deg2Rad;
-
-                            previewObj.transform.Rotate(Vector3.up, -rotX, Space.World);
-                            previewObj.transform.Rotate(Vector3.right, -rotY, Space.World);
-
-                            Repaint();
-                        }
-                    }
-                    break;
-                case EventType.ScrollWheel:
-                    if (previewRect.Contains(e.mousePosition))
-                    {
-                        float fov = previewCam.fieldOfView;
-                        fov += e.delta.y;
-                        fov = Mathf.Clamp(fov, minFOV, maxFOV);
-                        previewCam.fieldOfView = fov;
-                        Repaint();
-                    }
-                    break;
-            }
         }
     }
 }

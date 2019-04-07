@@ -55,7 +55,23 @@ namespace PTG
 
         public virtual void DrawInspector()
         {
+            GUILayout.Space(10);
+            GUILayout.BeginVertical("Box");
+            EditorGUILayout.LabelField("Preview Texture");
+            GUI.DrawTexture(new Rect(GUILayoutUtility.GetLastRect().x, GUILayoutUtility.GetRect(256, 256).y, 256, 256), texture);
+            GUILayout.EndVertical();
 
+            GUILayout.BeginVertical("Box");
+            if (GUILayout.Button("Save as PNG"))
+            {
+                var path = EditorUtility.SaveFilePanel("Save Texture as PNG", Application.dataPath, texture.name + ".png", "png");
+                if (path.Length != 0)
+                {
+                    System.IO.File.WriteAllBytes(path, texture.EncodeToPNG());
+                    AssetDatabase.Refresh();
+                }
+            }
+            GUILayout.EndVertical();
         }
 
         public virtual void DrawInOutPoints()

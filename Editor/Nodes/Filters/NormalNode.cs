@@ -95,8 +95,10 @@ namespace PTG
         {
             GUILayout.Space(10);
             GUILayout.BeginVertical("Box");
-            strength = EditorGUILayout.FloatField(strength, "Strength");
+            GUILayout.Label("Strength");
+            strength = EditorGUILayout.FloatField(strength);
             GUILayout.EndVertical();
+            base.DrawInspector();
         }
 
         public override object GetValue(int x, int y)
@@ -122,9 +124,6 @@ namespace PTG
                     texture.wrapMode = TextureWrapMode.Clamp;
                     texture.Apply();
                     editor.Repaint();
-
-                    System.IO.File.WriteAllBytes("Assets/Diffuse.png", texture.EncodeToPNG());
-                    AssetDatabase.Refresh();
                 }
 
                 if (outPoint.connections != null)

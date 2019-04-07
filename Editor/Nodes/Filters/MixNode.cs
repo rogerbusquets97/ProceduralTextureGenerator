@@ -110,6 +110,8 @@ namespace PTG
             GUILayout.Label("Color 2");
             color2 = EditorGUILayout.ColorField(color2);
             GUILayout.EndVertical();
+
+            base.DrawInspector();
         }
 
         public override object GetValue(int x, int y)

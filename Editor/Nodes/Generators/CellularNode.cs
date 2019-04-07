@@ -85,18 +85,6 @@ namespace PTG
             settings.frequency = EditorGUILayout.FloatField(settings.frequency);
             GUILayout.EndVertical();
 
-
-            GUILayout.BeginVertical("Box");
-            EditorGUILayout.LabelField("Seed");
-            GUILayout.BeginHorizontal();
-            settings.seed = EditorGUILayout.IntField(settings.seed);
-            if (GUILayout.Button("Randomize"))
-            {
-                settings.seed = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
-            }
-            GUILayout.EndHorizontal();
-            GUILayout.EndVertical();
-
             GUILayout.BeginVertical("Box");
             EditorGUILayout.LabelField("Cellular Return Type");
             settings.returnType = (FastNoise.CellularReturnType)EditorGUILayout.EnumPopup(settings.returnType);
@@ -115,6 +103,7 @@ namespace PTG
             settings.jitter = EditorGUILayout.FloatField(settings.jitter);
             GUILayout.EndVertical();
 
+            base.DrawInspector();
             
         }
 

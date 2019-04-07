@@ -75,6 +75,8 @@ namespace PTG
             EditorGUILayout.LabelField("Color");
             color = EditorGUILayout.ColorField(color);
             GUILayout.EndVertical();
+
+            base.DrawInspector();
         }
 
         private void FillColor(Color color)

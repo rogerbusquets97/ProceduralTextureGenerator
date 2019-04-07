@@ -98,6 +98,10 @@ namespace PTG
             EditorGUILayout.MinMaxSlider("Input Levels", ref data.inputLevels.x, ref data.inputLevels.y, 0, 1);
             EditorGUILayout.MinMaxSlider("Output Levels", ref data.outputLevels.x, ref data.outputLevels.y, 0, 1);
             GUILayout.EndVertical();
+
+            
+
+            base.DrawInspector();
         }
 
         public override object GetValue(int x, int y)

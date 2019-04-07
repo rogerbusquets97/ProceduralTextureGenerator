@@ -156,11 +156,7 @@ namespace PTG
             noiseType = (FractalNoiseType)EditorGUILayout.EnumPopup(noiseType);
             GUILayout.EndVertical();
 
-
-
-
-
-
+            base.DrawInspector();
         }
       
         public override void Compute(bool selfcompute = false)

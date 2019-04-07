@@ -121,6 +121,9 @@ namespace PTG
             EditorGUILayout.LabelField("Blend Mode");
             mode = (Filter.BlendMode)EditorGUILayout.EnumPopup(mode);
             GUILayout.EndVertical();
+
+
+            base.DrawInspector();
         }
         public override object GetValue(int x, int y)
         {

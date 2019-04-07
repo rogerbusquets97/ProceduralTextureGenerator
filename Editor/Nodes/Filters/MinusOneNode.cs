@@ -83,7 +83,7 @@ namespace PTG
 
         public override void DrawInspector()
         {
-            
+            base.DrawInspector();
         }
 
         public override object GetValue(int x, int y)
