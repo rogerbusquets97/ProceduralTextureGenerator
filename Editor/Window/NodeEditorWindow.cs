@@ -299,6 +299,9 @@ namespace PTG
             genericMenu.AddItem(new GUIContent("Filters/Levels"), false, () => OnClickAddNode(mousePosition, NodeType.Levels));
             genericMenu.AddItem(new GUIContent("Filters/Normal"), false, () => OnClickAddNode(mousePosition, NodeType.Normal));
             genericMenu.AddItem(new GUIContent("Filters/One Minus"), false, () => OnClickAddNode(mousePosition, NodeType.OneMinus));
+            genericMenu.AddItem(new GUIContent("Generators/Flat Color"), false, () => OnClickAddNode(mousePosition, NodeType.Color));
+            genericMenu.AddItem(new GUIContent("Filters/Mix"), false, () => OnClickAddNode(mousePosition, NodeType.Mix));
+
 
 
             genericMenu.ShowAsContext();
@@ -343,6 +346,18 @@ namespace PTG
                     n.Init(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
                     nodes.Add(n);
                     Selection.activeObject = n;
+                    break;
+                case NodeType.Color:
+                    FlatColor color = FlatColor.CreateInstance<FlatColor>();
+                    color.Init(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
+                    nodes.Add(color);
+                    Selection.activeObject = color;
+                    break;
+                case NodeType.Mix:
+                    MixNode mix = MixNode.CreateInstance<MixNode>();
+                    mix.Init(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
+                    nodes.Add(mix);
+                    Selection.activeObject = mix;
                     break;
             }
         }

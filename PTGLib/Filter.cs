@@ -213,5 +213,31 @@ public static class Filter
 
     }
     #endregion
+    #region Mix
+    public static Color[] Mix(Vector2Int ressolution, Color[] source, Color color1, Color color2)
+    {
+       return TextureFilter(ressolution, MixFunc, source, color1, color2);
+    }
+
+    private static void MixFunc(Vector2Int ressolution, ref Color[] outPixels, params object[] parameters)
+    {
+        Color[] source = (Color[])parameters[0];
+        Color color1 = (Color)parameters[1];
+        Color color2 = (Color)parameters[2];
+
+        for(int x = 0; x<ressolution.x; x++)
+        {
+            for(int y = 0; y < ressolution.y; y++)
+            {
+                outPixels[GetIndex(x,y,ressolution.x,ressolution.y)] = GetSingleMixValue(ressolution, x, y, source, color1, color2);
+            }
+        }
+    }
+
+    public static Color GetSingleMixValue(Vector2Int ressolution, int x , int y, Color[] source, Color color1, Color color2)
+    {
+        return Color.Lerp(color1, color2, source[(GetIndex(x, y, ressolution.x, ressolution.y))].grayscale);
+    }
+    #endregion
 
 }
