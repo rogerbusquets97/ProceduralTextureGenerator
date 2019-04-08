@@ -31,8 +31,7 @@ namespace PTG
 
         private void OnEnable()
         {
-            ressolution = new Vector2Int(256, 256);
-            texture = new Texture2D(ressolution.x, ressolution.y, TextureFormat.ARGB32, false);
+            InitTexture();
             noisePixels = texture.GetPixels();
         }
         public void Init(Vector2 position, float width, float height, GUIStyle inPointStyle, GUIStyle outPointStyle, Action<ConnectionPoint> OnClickInPoint, Action<ConnectionPoint> OnClickOutPoint, Action<NodeBase> OnClickRemoveNode, NodeEditorWindow editor)

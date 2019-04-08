@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace PTG
 {
-    public enum NodeType { None = 0, Fractal, Cellular, Blend,Levels, Normal, OneMinus, Color, Mix,MaskMap}
+    public enum NodeType { None = 0, Fractal, Cellular, Blend,Levels, Normal, OneMinus, Color, Mix,MaskMap, Checker, Generator}
 
     public class NodeBase : ScriptableObject
     {
@@ -30,6 +30,11 @@ namespace PTG
 
         virtual public object GetValue(int x, int y) { return 0; }
        
+        public void InitTexture()
+        {
+            ressolution = new Vector2Int(256, 256);
+            texture = new Texture2D(ressolution.x, ressolution.y, TextureFormat.RGBA32, false);
+        }
         public Texture2D GetTexture()
         {
             return texture;
@@ -168,7 +173,6 @@ namespace PTG
         {
             GenericMenu genericMenu = new GenericMenu();
             genericMenu.AddItem(new GUIContent("Remove Node"), false, OnClickRemoveNode);
-            genericMenu.AddItem(new GUIContent("Preview Texture"), false, OnPreviewTexture);
             genericMenu.ShowAsContext();
         }
 
@@ -178,19 +182,6 @@ namespace PTG
             {
                 OnRemoveNode(this);
                 DestroyImmediate(texture);
-            }
-        }
-
-        public virtual void OnPreviewTexture()
-        {
-            PreviewTexture win = (PreviewTexture)PreviewTexture.GetWindow(typeof(PreviewTexture), false, title);
-            win.autoRepaintOnSceneChange = true;
-            win.minSize = new Vector2(256, 256);
-            win.maxSize = new Vector2(256, 256);
-
-            if (texture != null)
-            {
-                win.texture = this.texture;
             }
         }
     }

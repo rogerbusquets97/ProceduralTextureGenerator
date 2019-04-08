@@ -6,24 +6,24 @@ using System;
 
 namespace PTG
 {
-    public class MinusOneNode : NodeBase
+    public class CheckerNode : NodeBase
     {
-        Color[] outPixels;
-        Color[] source;
-
-        ConnectionPoint inPoint;
         ConnectionPoint outPoint;
+        Color[] outPixels;
+        int numSquares;
 
-        public MinusOneNode()
+        public CheckerNode()
         {
-            title = "One Minus";
+            title = "Checker";
             door = new object();
+
         }
 
-        public void OnEnable()
+        private void OnEnable()
         {
             InitTexture();
             outPixels = texture.GetPixels();
+            numSquares = 8;
         }
 
         public void Init(Vector2 position, float width, float height, GUIStyle inPointStyle, GUIStyle outPointStyle, Action<ConnectionPoint> OnClickInPoint, Action<ConnectionPoint> OnClickOutPoint, Action<NodeBase> OnClickRemoveNode, NodeEditorWindow editor)
@@ -38,45 +38,28 @@ namespace PTG
 
             outPoints.Add(outPoint);
 
-            inPoint = new ConnectionPoint(this, ConnectionType.In, inPointStyle, OnClickInPoint);
-
-            if (inPoints == null)
-            {
-                inPoints = new List<ConnectionPoint>();
-            }
-
-            inPoints.Add(inPoint);
-
             OnRemoveNode = OnClickRemoveNode;
+
+            StartComputeThread(true);
         }
 
-        public override void StartComputeThread(bool selfCompute)
+        public override object GetValue(int x, int y)
         {
-            NodeBase n = null;
-            if (inPoint.connections.Count != 0)
-            {
-                n = inPoint.connections[0].outPoint.node;
-            }
-
-            if (n != null)
-            {
-                if (n.GetTexture() != null)
-                {
-                    source = n.GetTexture().GetPixels();
-
-                    base.StartComputeThread(selfCompute);
-                }
-            }
+            return 0;
         }
 
         public override void Draw()
         {
             base.Draw();
+
+            base.Draw();
             GUILayout.BeginArea(rect);
+            //Texture
             if (texture != null)
             {
                 GUI.DrawTexture(new Rect((rect.width / 4) - 15, (rect.height / 4) - 8, rect.width - 20, rect.height - 20), texture);
             }
+
             GUILayout.EndArea();
         }
 
@@ -85,21 +68,17 @@ namespace PTG
             base.DrawInspector();
         }
 
-        public override object GetValue(int x, int y)
-        {
-            return 0;
-        }
 
         public override void Compute(bool selfcompute = false)
         {
-            if(source!= null)
+            if(outPixels!= null)
             {
                 lock(door)
                 {
-                    outPixels = Filter.OneMinus(ressolution, source);
+                    outPixels = Noise.Checker(ressolution,numSquares);
+                    Debug.Log(ressolution);
                 }
             }
-
 
             Action MainThreadAction = () =>
             {
@@ -121,8 +100,6 @@ namespace PTG
             };
 
             QueueMainThreadFunction(MainThreadAction);
-
-
         }
     }
 }

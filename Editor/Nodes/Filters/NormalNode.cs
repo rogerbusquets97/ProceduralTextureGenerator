@@ -28,8 +28,7 @@ namespace PTG
 
         public void OnEnable()
         {
-            ressolution = new Vector2Int(256, 256);
-            texture = new Texture2D(ressolution.x, ressolution.y);
+            InitTexture();
             outPixels = texture.GetPixels();
         }
 
