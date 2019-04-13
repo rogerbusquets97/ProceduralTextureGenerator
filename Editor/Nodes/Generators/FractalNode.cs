@@ -17,6 +17,8 @@ namespace PTG
         float lastFrequency;
         int octaves;
         int lastOctaves;
+        bool seamless;
+        bool lastSeamless;
 
 
         public FractalNode()
@@ -28,12 +30,14 @@ namespace PTG
             lastFrequency = frequency;
             octaves = 20;
             lastOctaves = octaves;
+            seamless = false;
+            lastSeamless = seamless;
         }
 
         private void OnEnable()
         {
             InitTexture();
-            shader = (ComputeShader)Resources.Load("Noises");
+            shader = (ComputeShader)Resources.Load("Fractals");
             kernel = shader.FindKernel("FractalBrownianMotion");
             texture.enableRandomWrite = true;
             texture.Create();
@@ -78,20 +82,42 @@ namespace PTG
                 Compute(true);
             }
 
-            if(lastType!= type)
+            if(lastType!= type || lastSeamless!= seamless)
             {
                 lastType = type;
+                lastSeamless = seamless;
 
                 switch(type)
                 {
                     case FractalType.FractalBrownianMotion:
-                        kernel = shader.FindKernel("FractalBrownianMotion");
+                        if(!seamless)
+                        {
+                            kernel = shader.FindKernel("FractalBrownianMotion");
+                        }
+                        else
+                        {
+                            kernel = shader.FindKernel("SeamlessFractalBrownianMotion");
+                        }
                         break;
                     case FractalType.Billow:
-                        kernel = shader.FindKernel("FractalBillow");
+                        if(!seamless)
+                        {
+                            kernel = shader.FindKernel("FractalBillow");
+                        }
+                        else
+                        {
+                            kernel = shader.FindKernel("SeamlessFractalBillow");
+                        }
                         break;
                     case FractalType.Ridged:
-                        kernel = shader.FindKernel("FractalRidged");
+                        if(!seamless)
+                        {
+                            kernel = shader.FindKernel("FractalRidged");
+                        }
+                        else
+                        {
+                            kernel = shader.FindKernel("SeamlessFractalRidged");
+                        }
                         break;
                 }
 
@@ -117,6 +143,10 @@ namespace PTG
             GUILayout.BeginVertical("Box");
             EditorGUILayout.LabelField("Fractal Type");
             type = (FractalType)EditorGUILayout.EnumPopup(type);
+            GUILayout.EndVertical();
+
+            GUILayout.BeginVertical("Box");
+            seamless = EditorGUILayout.Toggle("Seamless", seamless);
             GUILayout.EndVertical();
 
             base.DrawInspector();

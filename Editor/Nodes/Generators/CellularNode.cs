@@ -6,7 +6,7 @@ using System;
 
 namespace PTG
 {
-    public enum CellularType {F1, F2, DistanceSub, DistanceMul};
+    public enum CellularType {F1, F2, DistanceSub, DistanceMul, OneMinusF};
     public class CellularNode : NodeBase
     {
         ConnectionPoint outPoint;
@@ -45,7 +45,7 @@ namespace PTG
         private void OnEnable()
         {
             InitTexture();
-            shader = (ComputeShader)Resources.Load("Noises");
+            shader = (ComputeShader)Resources.Load("Worley");
             kernel = shader.FindKernel("F1DistanceVoronoi");
             texture.enableRandomWrite = true;
             texture.Create();
@@ -130,6 +130,24 @@ namespace PTG
                         }
                         break;
                     case CellularType.DistanceMul:
+                        if (!seamless)
+                        {
+                            kernel = shader.FindKernel("FMultDistanceVoronoi");
+                        }
+                        else
+                        {
+                            kernel = shader.FindKernel("FMultDistanceSeamlessVoronoi");
+                        }
+                        break;
+                    case CellularType.OneMinusF:
+                        if (!seamless)
+                        {
+                            kernel = shader.FindKernel("OneMinusDistanceVoronoi");
+                        }
+                        else
+                        {
+                            kernel = shader.FindKernel("OneMinusDistanceSeamlessVoronoi");
+                        }
                         break;
                 }
             }
@@ -139,10 +157,13 @@ namespace PTG
 
         public override void DrawInspector()
         {
-            GUILayout.BeginVertical("Box");
-            EditorGUILayout.LabelField("Octaves");
-            octaves = EditorGUILayout.IntField(octaves);
-            GUILayout.EndVertical();
+            if (!seamless)
+            {
+                GUILayout.BeginVertical("Box");
+                EditorGUILayout.LabelField("Octaves");
+                octaves = EditorGUILayout.IntField(octaves);
+                GUILayout.EndVertical();
+            }
 
             if (!seamless)
             {
