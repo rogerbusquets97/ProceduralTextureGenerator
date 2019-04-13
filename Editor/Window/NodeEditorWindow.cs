@@ -97,7 +97,6 @@ namespace PTG
             {
                 for(int i = 0; i< nodes.Count; ++i)
                 {
-                    nodes[i].Update();
                     nodes[i].Draw();
                 }
             }
@@ -194,7 +193,6 @@ namespace PTG
                     if(e.button == 1)
                     {
                         ProcessContextMenu(e.mousePosition);
-                        Debug.Log("Process");
                     }
                     break;
                 case EventType.MouseDrag:
@@ -419,7 +417,7 @@ namespace PTG
                 selectedInPoint.connections.Add(con);
                 selectedOutPoint.connections.Add(con);
 
-                selectedOutPoint.node.StartComputeThread(true);
+                selectedOutPoint.node.Compute(true);
             }
 
             connections.Add(con);

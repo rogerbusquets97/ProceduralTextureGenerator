@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+
 public static class Noise
 {
     public enum FractalType { Brownian, Ridged, Billow };
@@ -114,7 +115,7 @@ public static class Noise
     {
         return noise.GetNoise(x, y) * 0.5f + 0.5f;
     }
-
+    
     private static void CellularFunc(Vector2Int ressolution, ref Color[] outPixels, params object[] parameters)
     {
         CellularSettings settings = (CellularSettings)parameters[0];
@@ -291,13 +292,14 @@ public static class Noise
     public static Color GetSingleBricksValue(Vector2Int ressolution, int x, int y)
     {
         Vector2 st = new Vector2((float)x / (float)ressolution.x, (float)y / (float)ressolution.y);
-
-        st = BrickTile(st, 5.0f);
+        st = Tile(st, 5.0f);
+        st = rotate2d(st, (float)(Mathf.PI * 0.25));
         float value = box(st, new Vector2(0.9f, 0.9f));
         //float value = circle(st, 0.5f);
         return new Color(value, value, value);
     }
-    private static Vector2 BrickTile(Vector2 _st, float _zoom)
+
+    private static Vector2 Tile(Vector2 _st, float _zoom)
     {
         _st *= _zoom;
         _st.x += Step(1f, mod(_st.y, 2.0f)) * 0.5f;
@@ -306,14 +308,14 @@ public static class Noise
 
     private static float box(Vector2 _st, Vector2 _size)
     {
-        _size = new Vector2(0.5f, 0.5f) - _size * 0.5f;
-        float u = SmoothStep(_size.x, _size.x + (1*Mathf.Pow(10,-4)), _st.x);
-        u *= SmoothStep(_size.x, _size.x + (1*Mathf.Pow(10,-4)), 1 - _st.x);
+         _size = new Vector2(0.5f, 0.5f) - _size * 0.5f;
+         float u = SmoothStep(_size.x, _size.x + (1*Mathf.Pow(10,-4)), _st.x);
+         u *= SmoothStep(_size.x, _size.x + (1*Mathf.Pow(10,-4)), 1 - _st.x);
 
-        float v = SmoothStep(_size.y, _size.y + (1*Mathf.Pow(10,-4)), _st.y);
-        v *= SmoothStep(_size.y, _size.y + (1*Mathf.Pow(10,-4)), 1 - _st.y);
+         float v = SmoothStep(_size.y, _size.y + (1*Mathf.Pow(10,-4)), _st.y);
+         v *= SmoothStep(_size.y, _size.y + (1*Mathf.Pow(10,-4)), 1 - _st.y);
 
-        return u * v;
+         return u * v;
     }
     private static float circle(Vector2 _st, float _radius)
     {
@@ -323,6 +325,46 @@ public static class Noise
     #endregion
 
     #region Utilities
+
+    public struct mat2x2
+    {
+        public Vector2[] elements;
+
+        public mat2x2(Vector2 first, Vector2 second)
+        {
+            elements = new Vector2[2];
+            elements[0] = first;
+            elements[1] = second;
+        }
+
+        public static Vector2 operator* (mat2x2 v2, Vector2 v)
+        {
+            Vector2 result = new Vector2();
+            result.x = v2.elements[0].x * v.x + v2.elements[0].y*v.y;
+            result.y = v2.elements[1].x * v.x + v2.elements[1].y * v.y;
+
+            return result;
+        }
+    }
+
+    public static mat2x2 rotate2d(float _angle)
+    {
+        Vector2 first = new Vector2(Mathf.Cos(_angle), -Mathf.Sin(_angle));
+        Vector2 second = new Vector2(Mathf.Sin(_angle), Mathf.Cos(_angle));
+
+        return new mat2x2(first, second);
+    }
+
+    public static Vector2 rotate2d(Vector2 _st, float _angle)
+    {
+        _st -= new Vector2(0.5f, 0.5f);
+        _st = new mat2x2(new Vector2(Mathf.Cos(_angle), -Mathf.Sin(_angle)),
+                new Vector2(Mathf.Sin(_angle), Mathf.Cos(_angle))) * _st;
+        _st += new Vector2(0.5f, 0.5f);
+
+        return _st;
+    }
+
     public static float Step(float edge, float x)
     {
         return x < edge ? 0f : 1f;

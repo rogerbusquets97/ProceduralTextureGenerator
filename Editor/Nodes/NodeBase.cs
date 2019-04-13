@@ -17,25 +17,25 @@ namespace PTG
         public bool isDragged;
         public bool isSelected;
 
-        protected object door;
         protected NodeEditorWindow editor;
 
         public List<ConnectionPoint> inPoints;
         public List<ConnectionPoint> outPoints;
 
-        public List<Action> MainThreadActions = new List<Action>();
         public Action<NodeBase> OnRemoveNode;
 
-        public Texture2D texture;
+        public RenderTexture texture;
+        public ComputeShader shader;
+        public int kernel;
 
         virtual public object GetValue(int x, int y) { return 0; }
        
         public void InitTexture()
         {
-            ressolution = new Vector2Int(256, 256);
-            texture = new Texture2D(ressolution.x, ressolution.y, TextureFormat.RGBA32, false);
+            ressolution = new Vector2Int(1024, 1024);
+            texture = new RenderTexture(ressolution.x, ressolution.y, 24);
         }
-        public Texture2D GetTexture()
+        public RenderTexture GetTexture()
         {
             return texture;
         }
@@ -44,11 +44,6 @@ namespace PTG
             rect.position += delta;
         }
 
-        virtual public void StartComputeThread(bool selfCompute)
-        {
-            Thread nodeThread = new Thread(new ThreadStart(() => Compute(selfCompute)));
-            nodeThread.Start();
-        }
         virtual public void Compute(bool selfcompute = false)
         {
 
@@ -69,11 +64,20 @@ namespace PTG
             GUILayout.BeginVertical("Box");
             if (GUILayout.Button("Save as PNG"))
             {
-                var path = EditorUtility.SaveFilePanel("Save Texture as PNG", Application.dataPath, texture.name + ".png", "png");
-                if (path.Length != 0)
+                if (texture != null)
                 {
-                    System.IO.File.WriteAllBytes(path, texture.EncodeToPNG());
-                    AssetDatabase.Refresh();
+                    var path = EditorUtility.SaveFilePanel("Save Texture as PNG", Application.dataPath, texture.name + ".png", "png");
+                    if (path.Length != 0)
+                    {
+                        Texture2D output = new Texture2D(ressolution.x, ressolution.y, TextureFormat.ARGB32, false);
+                        RenderTexture.active = texture;
+                        output.ReadPixels(new Rect(0, 0, ressolution.x, ressolution.y), 0, 0);
+                        output.Apply();
+                        RenderTexture.active = null;
+
+                        System.IO.File.WriteAllBytes(path, output.EncodeToPNG());
+                        AssetDatabase.Refresh();
+                    }
                 }
             }
             GUILayout.EndVertical();
@@ -96,29 +100,6 @@ namespace PTG
                 }
             }
 
-        }
-
-        public virtual void Update()
-        {
-            while (MainThreadActions.Count > 0)
-            {
-                // Grab the first/oldest function in the list
-                Action func = MainThreadActions[0];
-                MainThreadActions.RemoveAt(0);
-
-                // Now run it
-                func();
-            }
-        }
-
-        public void QueueMainThreadFunction(Action someFunction)
-        {
-            // We need to make sure that someFunction is running from the
-            // main thread
-
-            //someFunction(); // This isn't okay, if we're in a child thread
-
-            MainThreadActions.Add(someFunction);
         }
 
         public bool ProcessEvents(Event e)

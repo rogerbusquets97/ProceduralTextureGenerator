@@ -17,7 +17,6 @@ namespace PTG
         public FlatColor()
         {
             title = "Flat Color";
-            door = new object();
             color = Color.black;
             lastColor = color;
         }
@@ -25,7 +24,7 @@ namespace PTG
         public void OnEnable()
         {
             InitTexture();
-            pixels = texture.GetPixels();
+            //pixels = texture.GetPixels();
         }
 
         public void Init(Vector2 position, float width, float height, GUIStyle inPointStyle, GUIStyle outPointStyle, Action<ConnectionPoint> OnClickInPoint, Action<ConnectionPoint> OnClickOutPoint, Action<NodeBase> OnClickRemoveNode, NodeEditorWindow editor)
@@ -41,13 +40,13 @@ namespace PTG
             outPoints.Add(outPoint);
             OnRemoveNode = OnClickRemoveNode;
 
-            StartComputeThread(true);
+            Compute(true);
         }
 
-        public override void StartComputeThread(bool selfCompute)
+        /*public override void StartComputeThread(bool selfCompute)
         {
             base.StartComputeThread(selfCompute);
-        }
+        }*/
 
         public override void Draw()
         {
@@ -63,7 +62,7 @@ namespace PTG
             if(lastColor!= color)
             {
                 lastColor = color;
-                StartComputeThread(true);
+                Compute(true);
             }
         }
 
@@ -96,19 +95,16 @@ namespace PTG
         {
             if(pixels!= null)
             {
-                lock(door)
-                {
-                    FillColor(color);
-                }
+              
             }
 
             Action MainThreadAction = () =>
             {
                 if (selfcompute)
                 {
-                    texture.SetPixels(pixels);
+                    //texture.SetPixels(pixels);
                     texture.wrapMode = TextureWrapMode.Clamp;
-                    texture.Apply();
+                    //texture.Apply();
                     editor.Repaint();
                 }
 
@@ -116,12 +112,10 @@ namespace PTG
                 {
                     for (int i = 0; i < outPoint.connections.Count; i++)
                     {
-                        outPoint.connections[i].inPoint.node.StartComputeThread(true);
+                        outPoint.connections[i].inPoint.node.Compute(true);
                     }
                 }
             };
-
-            QueueMainThreadFunction(MainThreadAction);
         }
     }
 

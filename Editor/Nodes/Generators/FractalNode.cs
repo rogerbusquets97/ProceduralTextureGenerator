@@ -6,33 +6,37 @@ using System;
 
 namespace PTG
 {
-    enum FractalNoiseType { Cubic, Simplex, Perlin, Value};
+    public enum FractalType { FractalBrownianMotion, Billow, Ridged };
     public class FractalNode : NodeBase
     {
         ConnectionPoint outPoint;
-        Color[] noisePixels;
-        FractalNoiseType noiseType;
-        FractalNoiseType lastNoiseType;
-        Noise.FractalSettings settings;
-        Noise.FractalSettings lastSettings;
-        FastNoise noise;
+
+        FractalType type;
+        FractalType lastType;
+        float frequency;
+        float lastFrequency;
+        int octaves;
+        int lastOctaves;
+
 
         public FractalNode()
         {
             title = "Fractal Noise";
-            door = new object();
-
-            noiseType = FractalNoiseType.Simplex;
-            lastNoiseType = noiseType;
-            settings = new Noise.FractalSettings(1337, 5, 2f, 0.01f, 0.5f,1f,1f, FastNoise.FractalType.FBM, FastNoise.NoiseType.SimplexFractal);
-            lastSettings = settings;
-            noise = new FastNoise();
+            type = FractalType.FractalBrownianMotion;
+            lastType = type;
+            frequency = 0.001f;
+            lastFrequency = frequency;
+            octaves = 20;
+            lastOctaves = octaves;
         }
 
         private void OnEnable()
         {
             InitTexture();
-            noisePixels = texture.GetPixels();
+            shader = (ComputeShader)Resources.Load("Noises");
+            kernel = shader.FindKernel("FractalBrownianMotion");
+            texture.enableRandomWrite = true;
+            texture.Create();
         }
         public void Init(Vector2 position, float width, float height, GUIStyle inPointStyle, GUIStyle outPointStyle, Action<ConnectionPoint> OnClickInPoint, Action<ConnectionPoint> OnClickOutPoint, Action<NodeBase> OnClickRemoveNode, NodeEditorWindow editor)
         {
@@ -48,56 +52,53 @@ namespace PTG
 
             OnRemoveNode = OnClickRemoveNode;
 
-            StartComputeThread(true);
+            Compute(true);
         }
 
         public override object GetValue(int x, int y)
         {
-            return Noise.GetSingleFractal(x, y, ressolution, settings, noise);
+            return 0;
         }
         public override void Draw()
         {
             base.Draw();
             GUILayout.BeginArea(rect);
             //Texture
-            if(texture!=null)
+             if(texture!=null)
              {
                  GUI.DrawTexture(new Rect((rect.width / 4) - 15, (rect.height / 4) - 8, rect.width - 20, rect.height - 20), texture);
              }
 
             GUILayout.EndArea();
 
-            if(lastSettings.octaves!= settings.octaves || lastSettings.persistance!= settings.persistance|| lastSettings.seed!= settings.seed|| lastSettings.frequency!= settings.frequency||lastSettings.lacunarity!= settings.lacunarity||lastSettings.fractalType!= settings.fractalType || lastSettings.XScale!= settings.XScale || lastSettings.YScale!= settings.YScale)
+            if(lastOctaves!= octaves || lastFrequency!= frequency )
             {
-                lastSettings = settings;
-                StartComputeThread(true);
+                lastFrequency = frequency;
+                lastOctaves = octaves;
+                Compute(true);
             }
 
-            if(noiseType!= lastNoiseType)
+            if(lastType!= type)
             {
-                lastNoiseType = noiseType;
-                switch(noiseType)
+                lastType = type;
+
+                switch(type)
                 {
-                    case FractalNoiseType.Cubic:
-                        settings.noiseType = FastNoise.NoiseType.CubicFractal;
-                        lastSettings = settings;
+                    case FractalType.FractalBrownianMotion:
+                        kernel = shader.FindKernel("FractalBrownianMotion");
                         break;
-                    case FractalNoiseType.Perlin:
-                        settings.noiseType = FastNoise.NoiseType.PerlinFractal;
-                        lastSettings = settings;
+                    case FractalType.Billow:
+                        kernel = shader.FindKernel("FractalBillow");
                         break;
-                    case FractalNoiseType.Simplex:
-                        settings.noiseType = FastNoise.NoiseType.SimplexFractal;
-                        lastSettings = settings;
-                        break;
-                    case FractalNoiseType.Value:
-                        settings.noiseType = FastNoise.NoiseType.ValueFractal;
-                        lastSettings = settings;
+                    case FractalType.Ridged:
+                        kernel = shader.FindKernel("FractalRidged");
                         break;
                 }
 
-                StartComputeThread(true);
+                Compute(true);
             }
+              
+
         }
 
         public override void DrawInspector()
@@ -105,54 +106,17 @@ namespace PTG
             GUILayout.Space(10);
             GUILayout.BeginVertical("Box");
             EditorGUILayout.LabelField("Octaves");
-            settings.octaves = EditorGUILayout.IntField(settings.octaves);
+            octaves = EditorGUILayout.IntField(octaves);
             GUILayout.EndVertical();
 
             GUILayout.BeginVertical("Box");
             EditorGUILayout.LabelField("Frequency");
-            settings.frequency = EditorGUILayout.FloatField(settings.frequency);
-            GUILayout.EndVertical();
-
-
-            GUILayout.BeginVertical("Box");
-            EditorGUILayout.LabelField("Seed");
-            GUILayout.BeginHorizontal();
-            settings.seed = EditorGUILayout.IntField(settings.seed);
-            if(GUILayout.Button("Randomize"))
-            {
-                settings.seed = UnityEngine.Random.Range(int.MinValue, int.MaxValue);
-            }
-            GUILayout.EndHorizontal();
-            GUILayout.EndVertical();
-
-            GUILayout.BeginVertical("Box");
-            EditorGUILayout.LabelField("Lacunarity");
-            settings.lacunarity = EditorGUILayout.FloatField(settings.lacunarity);
-            GUILayout.EndVertical();
-
-            GUILayout.BeginVertical("Box");
-            EditorGUILayout.LabelField("Persistance");
-            settings.persistance = EditorGUILayout.FloatField(settings.persistance);
-            GUILayout.EndVertical();
-
-            GUILayout.BeginVertical("Box");
-            EditorGUILayout.LabelField("XScale");
-            settings.XScale = EditorGUILayout.FloatField(settings.XScale);
-            GUILayout.EndVertical();
-
-            GUILayout.BeginVertical("Box");
-            EditorGUILayout.LabelField("YScale");
-            settings.YScale = EditorGUILayout.FloatField(settings.YScale);
+            frequency = EditorGUILayout.FloatField(frequency);
             GUILayout.EndVertical();
 
             GUILayout.BeginVertical("Box");
             EditorGUILayout.LabelField("Fractal Type");
-            settings.fractalType = (FastNoise.FractalType)EditorGUILayout.EnumPopup(settings.fractalType);
-            GUILayout.EndVertical();
-
-            GUILayout.BeginVertical("Box");
-            EditorGUILayout.LabelField("Fractal Noise Type");
-            noiseType = (FractalNoiseType)EditorGUILayout.EnumPopup(noiseType);
+            type = (FractalType)EditorGUILayout.EnumPopup(type);
             GUILayout.EndVertical();
 
             base.DrawInspector();
@@ -160,34 +124,25 @@ namespace PTG
       
         public override void Compute(bool selfcompute = false)
         {
-            if(noisePixels!= null && selfcompute)
+            if(selfcompute)
             {
-                lock(door)
+                if (shader != null)
                 {
-                    noisePixels = Noise.Fractal(ressolution, settings,noise);
+                    shader.SetTexture(kernel, "Result", texture);
+                    shader.SetFloat("ressolution", (float)ressolution.x);
+                    shader.SetInt("octaves", octaves);
+                    shader.SetFloat("frequency", frequency);
+                    shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
                 }
             }
 
-            Action MainThreadAction = () =>
+            if (outPoint.connections != null)
             {
-                if (selfcompute)
+                for (int i = 0; i < outPoint.connections.Count; i++)
                 {
-                    texture.SetPixels(noisePixels);
-                    texture.wrapMode = TextureWrapMode.Clamp;
-                    texture.Apply();
-                    editor.Repaint();
+                    outPoint.connections[i].inPoint.node.Compute(true);
                 }
-
-                if (outPoint.connections != null)
-                {
-                    for (int i = 0; i < outPoint.connections.Count; i++)
-                    {
-                        outPoint.connections[i].inPoint.node.StartComputeThread(true);
-                    }
-                }
-            };
-
-            QueueMainThreadFunction(MainThreadAction);
+            }
         }
     }
 }

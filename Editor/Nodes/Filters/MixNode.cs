@@ -23,7 +23,6 @@ namespace PTG
         public MixNode()
         {
             title = "Mix";
-            door = new object();
             color1 = Color.white;
             color2 = Color.black;
 
@@ -34,7 +33,7 @@ namespace PTG
         public void OnEnable()
         {
             InitTexture();
-            outPixels = texture.GetPixels();
+            //outPixels = texture.GetPixels();
         }
 
         public void Init(Vector2 position, float width, float height, GUIStyle inPointStyle, GUIStyle outPointStyle, Action<ConnectionPoint> OnClickInPoint, Action<ConnectionPoint> OnClickOutPoint, Action<NodeBase> OnClickRemoveNode, NodeEditorWindow editor)
@@ -61,7 +60,7 @@ namespace PTG
             OnRemoveNode = OnClickRemoveNode;
         }
 
-        public override void StartComputeThread(bool selfCompute)
+        /*public override void StartComputeThread(bool selfCompute)
         {
             NodeBase n = null;
             if(inPoint.connections.Count!= 0)
@@ -73,11 +72,11 @@ namespace PTG
             {
                 if(n.GetTexture()!= null)
                 {
-                    source = n.GetTexture().GetPixels();
+                    //source = n.GetTexture().GetPixels();
                     base.StartComputeThread(selfCompute);
                 }
             }
-        }
+        }*/
 
         public override void Draw()
         {
@@ -93,7 +92,7 @@ namespace PTG
             {
                 lastColor1 = color1;
                 lastColor2 = color2;
-                StartComputeThread(true);
+                Compute(true);
             }
         }
 
@@ -122,19 +121,15 @@ namespace PTG
         {
            if(source!= null)
            {
-                lock(door)
-                {
-                    outPixels = Filter.Mix(ressolution, source, color1, color2);
-                }
            }
 
             Action MainThreadAction = () =>
             {
                 if (selfcompute)
                 {
-                    texture.SetPixels(outPixels);
+                    //texture.SetPixels(outPixels);
                     texture.wrapMode = TextureWrapMode.Clamp;
-                    texture.Apply();
+                    //texture.Apply();
                     editor.Repaint();
                 }
 
@@ -142,12 +137,10 @@ namespace PTG
                 {
                     for (int i = 0; i < outPoint.connections.Count; i++)
                     {
-                        outPoint.connections[i].inPoint.node.StartComputeThread(true);
+                        outPoint.connections[i].inPoint.node.Compute(true);
                     }
                 }
             };
-
-            QueueMainThreadFunction(MainThreadAction);
         }
     }
 }

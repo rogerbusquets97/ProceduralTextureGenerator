@@ -25,7 +25,6 @@ namespace PTG
         public BlendNode()
         {
             title = "Blend";
-            door = new object();
             mode = Filter.BlendMode.Multiply;
             lastMode = mode;
         }
@@ -33,7 +32,7 @@ namespace PTG
         public void OnEnable()
         {
             InitTexture();
-            outPixels = texture.GetPixels();
+            //outPixels = texture.GetPixels();
         }
 
         public void Init(Vector2 position, float width, float height, GUIStyle inPointStyle, GUIStyle outPointStyle, Action<ConnectionPoint> OnClickInPoint, Action<ConnectionPoint> OnClickOutPoint, Action<NodeBase> OnClickRemoveNode, NodeEditorWindow editor)
@@ -64,7 +63,7 @@ namespace PTG
             OnRemoveNode = OnClickRemoveNode;
         }
 
-        public override void StartComputeThread(bool selfCompute)
+        /*public override void StartComputeThread(bool selfCompute)
         {
             NodeBase n = null;
             NodeBase n2 = null;
@@ -83,17 +82,17 @@ namespace PTG
                     {
                         if (maskPoint.connections.Count!= 0)
                         {
-                            mask = maskPoint.connections[0].outPoint.node.GetTexture().GetPixels();
+                            //mask = maskPoint.connections[0].outPoint.node.GetTexture().GetPixels();
                         }
                     }
 
-                    Apixels = n.GetTexture().GetPixels();
-                    Bpixels = n2.GetTexture().GetPixels();
+                    //Apixels = n.GetTexture().GetPixels();
+                    //Bpixels = n2.GetTexture().GetPixels();
 
                     base.StartComputeThread(selfCompute);
                 }
             }
-        }
+        }*/
 
         public override void Draw()
         {
@@ -108,7 +107,7 @@ namespace PTG
             if(lastMode != mode)
             {
                 lastMode = mode;
-                StartComputeThread(true);
+                Compute(true);
             }
         }
 
@@ -135,19 +134,16 @@ namespace PTG
         {
             if(Apixels!= null && Bpixels!= null)
             {
-                lock (door)
-                {
-                    outPixels = Filter.Blend(ressolution,  Apixels,  Bpixels, mode, mask);
-                }
+               
             }
            
             Action MainThreadAction = () =>
             {
                 if (selfcompute)
                 {
-                    texture.SetPixels(outPixels);
+                    //texture.SetPixels(outPixels);
                     texture.wrapMode = TextureWrapMode.Clamp;
-                    texture.Apply();
+                    //texture.Apply();
                     editor.Repaint();
                 }
 
@@ -155,12 +151,10 @@ namespace PTG
                 {
                     for(int i = 0; i< outPoint.connections.Count; i++)
                     {
-                        outPoint.connections[i].inPoint.node.StartComputeThread(true);
+                        outPoint.connections[i].inPoint.node.Compute(true);
                     }
                 }
             };
-
-            QueueMainThreadFunction(MainThreadAction);
         }
     }
 }

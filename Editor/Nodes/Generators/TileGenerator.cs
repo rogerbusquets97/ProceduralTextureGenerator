@@ -14,13 +14,12 @@ namespace PTG
         public TileGenerator()
         {
             title = "Tile Generator";
-            door = new object();
         }
 
         private void OnEnable()
         {
             InitTexture();
-            outPixels = texture.GetPixels();
+            //outPixels = texture.GetPixels();
         }
 
         public void Init(Vector2 position, float width, float height, GUIStyle inPointStyle, GUIStyle outPointStyle, Action<ConnectionPoint> OnClickInPoint, Action<ConnectionPoint> OnClickOutPoint, Action<NodeBase> OnClickRemoveNode, NodeEditorWindow editor)
@@ -37,7 +36,7 @@ namespace PTG
 
             OnRemoveNode = OnClickRemoveNode;
 
-            StartComputeThread(true);
+            Compute(true);
         }
 
         public override object GetValue(int x, int y)
@@ -69,19 +68,16 @@ namespace PTG
         {
             if (outPixels != null)
             {
-                lock (door)
-                {
-                    outPixels = Noise.TileGenerator(ressolution);
-                }
+                
             }
 
             Action MainThreadAction = () =>
             {
                 if (selfcompute)
                 {
-                    texture.SetPixels(outPixels);
+                    //texture.SetPixels(outPixels);
                     texture.wrapMode = TextureWrapMode.Clamp;
-                    texture.Apply();
+                    //texture.Apply();
                     editor.Repaint();
                 }
 
@@ -89,12 +85,10 @@ namespace PTG
                 {
                     for (int i = 0; i < outPoint.connections.Count; i++)
                     {
-                        outPoint.connections[i].inPoint.node.StartComputeThread(true);
+                        outPoint.connections[i].inPoint.node.Compute(true);
                     }
                 }
             };
-
-            QueueMainThreadFunction(MainThreadAction);
         }
     }
 }

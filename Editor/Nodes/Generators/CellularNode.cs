@@ -6,27 +6,49 @@ using System;
 
 namespace PTG
 {
+    public enum CellularType {F1, F2, DistanceSub, DistanceMul};
     public class CellularNode : NodeBase
     {
         ConnectionPoint outPoint;
-        Color[] noisePixels;
-        Noise.CellularSettings settings;
-        Noise.CellularSettings lastSettings;
-        FastNoise noise;
+        CellularType type;
+        CellularType lastType;
+        int octaves;
+        int lastOctaves;
+        float frequency;
+        float lastFrequency;
+
+        bool seamless;
+        bool lastSeamless;
+
+        float XScale;
+        float YScale;
+        float lastXScale;
+        float lastYScale; 
 
         public CellularNode()
         {
             title = "Cellular Node";
-            door = new object();
-            settings = new Noise.CellularSettings(1337, FastNoise.NoiseType.Cellular, FastNoise.CellularDistanceFunction.Euclidean, FastNoise.CellularReturnType.CellValue, 0.01f, new Vector2Int(0, 1), 0.45f);
-            lastSettings = settings;
-            noise = new FastNoise();
+            type = CellularType.F1;
+            lastType = type;
+            octaves = 1;
+            lastOctaves = octaves;
+            frequency = 0.01f;
+            lastFrequency = frequency;
+            seamless = false;
+            lastSeamless = seamless;
+            XScale = 10;
+            YScale = 10;
+            lastXScale = XScale;
+            lastYScale = YScale;
         }
 
         private void OnEnable()
         {
             InitTexture();
-            noisePixels = texture.GetPixels();
+            shader = (ComputeShader)Resources.Load("Noises");
+            kernel = shader.FindKernel("F1DistanceVoronoi");
+            texture.enableRandomWrite = true;
+            texture.Create();
         }
 
         public void Init(Vector2 position, float width, float height, GUIStyle inPointStyle, GUIStyle outPointStyle, Action<ConnectionPoint> OnClickInPoint, Action<ConnectionPoint> OnClickOutPoint, Action<NodeBase> OnClickRemoveNode, NodeEditorWindow editor)
@@ -43,12 +65,12 @@ namespace PTG
 
             OnRemoveNode = OnClickRemoveNode;
 
-            StartComputeThread(true);
+            Compute(true);
         }
 
         public override object GetValue(int x, int y)
         {
-            return Noise.GetSingleCellular(x, y, ressolution, settings, noise);
+            return 0;
         }
 
         public override void Draw()
@@ -63,43 +85,93 @@ namespace PTG
 
             GUILayout.EndArea();
 
-            if(lastSettings.CellularDistanceFunc!= settings.CellularDistanceFunc || lastSettings.cellularIndices!= settings.cellularIndices|| lastSettings.seed!= settings.seed||lastSettings.frequency!= settings.frequency||lastSettings.jitter!= settings.jitter||lastSettings.noiseType!= settings.noiseType || lastSettings.returnType!=settings.returnType || lastSettings.lookup!= settings.lookup)
+            if (lastOctaves != octaves || lastFrequency != frequency || lastYScale!= YScale || lastXScale!= XScale)
             {
-                lastSettings = settings;
-                StartComputeThread(true);
+                lastFrequency = frequency;
+                lastOctaves = octaves;
+                Compute(true);
             }
 
+            if (lastType != type || lastSeamless!= seamless)
+            {
+                lastType = type;
+                lastSeamless = seamless;
+
+                switch (type)
+                {
+                    case CellularType.F1:
+                        if (!seamless)
+                        {
+                            kernel = shader.FindKernel("F1DistanceVoronoi");
+                        }
+                        else
+                        {
+                            kernel = shader.FindKernel("F1DistanceSeamlessVoronoi");
+                        }
+                        break;
+                    case CellularType.F2:
+                        if(!seamless)
+                        {
+                            kernel = shader.FindKernel("F2DistanceVoronoi");
+                        }
+                        else
+                        {
+                            kernel = shader.FindKernel("F2DistanceSeamlessVoronoi");
+                        }
+                        break;
+                    case CellularType.DistanceSub:
+                        if (!seamless)
+                        {
+                            kernel = shader.FindKernel("FMinusDistanceVoronoi");
+                        }
+                        else
+                        {
+                            kernel = shader.FindKernel("FMinusDistanceSeamlessVoronoi");
+                        }
+                        break;
+                    case CellularType.DistanceMul:
+                        break;
+                }
+            }
+
+            Compute(true);
         }
 
         public override void DrawInspector()
         {
-            GUILayout.Space(10);
             GUILayout.BeginVertical("Box");
-            EditorGUILayout.LabelField("Cellular Distance Function");
-            settings.CellularDistanceFunc = (FastNoise.CellularDistanceFunction)EditorGUILayout.EnumPopup(settings.CellularDistanceFunc);
+            EditorGUILayout.LabelField("Octaves");
+            octaves = EditorGUILayout.IntField(octaves);
             GUILayout.EndVertical();
 
-            GUILayout.BeginVertical("Box");
-            EditorGUILayout.LabelField("Frequency");
-            settings.frequency = EditorGUILayout.FloatField(settings.frequency);
-            GUILayout.EndVertical();
-
-            GUILayout.BeginVertical("Box");
-            EditorGUILayout.LabelField("Cellular Return Type");
-            settings.returnType = (FastNoise.CellularReturnType)EditorGUILayout.EnumPopup(settings.returnType);
-            GUILayout.EndVertical();
-
-            GUILayout.BeginVertical("Box");
-            settings.cellularIndices = EditorGUILayout.Vector2IntField("Cellular Indices", settings.cellularIndices);
-            if(settings.cellularIndices.x > settings.cellularIndices.y || settings.cellularIndices.x > 4 || settings.cellularIndices.y > 4)
+            if (!seamless)
             {
-                EditorGUILayout.HelpBox("Indices can NOT be greater than 0. X index MUST be smaller than Y index", MessageType.Warning);
+                GUILayout.BeginVertical("Box");
+                EditorGUILayout.LabelField("Frequency");
+                frequency = EditorGUILayout.FloatField(frequency);
+                GUILayout.EndVertical();
             }
+
+            else
+            {
+                GUILayout.BeginVertical("Box");
+                EditorGUILayout.LabelField("XScale");
+                XScale = EditorGUILayout.FloatField(XScale);
+                GUILayout.EndVertical();
+
+                GUILayout.BeginVertical("Box");
+                EditorGUILayout.LabelField("YScale");
+                YScale = EditorGUILayout.FloatField(YScale);
+                GUILayout.EndVertical();
+            }
+
+            GUILayout.BeginVertical("Box");
+            EditorGUILayout.LabelField("Cellular Type");
+            type = (CellularType)EditorGUILayout.EnumPopup(type);
             GUILayout.EndVertical();
 
             GUILayout.BeginVertical("Box");
-            EditorGUILayout.LabelField("Jitter");
-            settings.jitter = EditorGUILayout.FloatField(settings.jitter);
+            seamless = EditorGUILayout.Toggle("Seamless", seamless);
             GUILayout.EndVertical();
 
             base.DrawInspector();
@@ -108,33 +180,27 @@ namespace PTG
 
         public override void Compute(bool selfcompute = false)
         {
-            if(noisePixels!= null && selfcompute)
-            {
-                lock(door)
+           if(selfcompute)
+           {
+                if(shader!= null)
                 {
-                    noisePixels = Noise.Cellular(ressolution, settings, noise);
+                    shader.SetTexture(kernel, "Result", texture);
+                    shader.SetFloat("ressolution", (float)ressolution.x);
+                    shader.SetInt("octaves", octaves);
+                    shader.SetFloat("frequency", frequency);
+                    shader.SetFloat("YScale", YScale);
+                    shader.SetFloat("XScale", XScale);
+                    shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
+                }
+           }
+
+            if (outPoint.connections != null)
+            {
+                for (int i = 0; i < outPoint.connections.Count; i++)
+                {
+                    outPoint.connections[i].inPoint.node.Compute(true);
                 }
             }
-
-            Action MainThreadAction = () =>
-            {
-                if (selfcompute)
-                {
-                    texture.SetPixels(noisePixels);
-                    texture.wrapMode = TextureWrapMode.Clamp;
-                    texture.Apply();
-                    editor.Repaint();
-                }
-
-                if(outPoint.connections!= null)
-                {
-                    for (int i = 0; i < outPoint.connections.Count; i++)
-                    {
-                        outPoint.connections[i].inPoint.node.StartComputeThread(true);
-                    }
-                }
-            };
-            QueueMainThreadFunction(MainThreadAction);
         }
     }
 }

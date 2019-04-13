@@ -1,0 +1,30 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel Levels
+#pragma kernel OneMinus
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWTexture2D<float4> source;
+RWTexture2D<float4> Result;
+float2 inLevels;
+float2 outLevels;
+
+[numthreads(8,8,1)]
+void Levels (uint3 id : SV_DispatchThreadID)
+{
+	
+	float r = (source[id.xy].r - inLevels.x) / (inLevels.y - inLevels.x);
+	r = r * (outLevels.y - outLevels.x) + outLevels.x;
+	float g = (source[id.xy].g - inLevels.x) / (inLevels.y - inLevels.x);
+	g = g * (outLevels.y - outLevels.x) + outLevels.x;
+	float b = (source[id.xy].b - inLevels.x) / (inLevels.y - inLevels.x);
+	b = b * (outLevels.y - outLevels.x) + outLevels.x;
+
+	float3 color = float3(r, g, b);
+	Result[id.xy] = float4(color, 1.);
+}
+
+[numthreads(8, 8, 1)]
+void OneMinus(uint3 id : SV_DispatchThreadID)
+{
+	Result[id.xy] = float4(1 - source[id.xy].r, 1- source[id.xy].g, 1 - source[id.xy].b, 1.);
+}

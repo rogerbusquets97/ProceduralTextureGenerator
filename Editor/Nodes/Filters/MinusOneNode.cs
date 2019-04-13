@@ -8,8 +8,7 @@ namespace PTG
 {
     public class MinusOneNode : NodeBase
     {
-        Color[] outPixels;
-        Color[] source;
+        RenderTexture source;
 
         ConnectionPoint inPoint;
         ConnectionPoint outPoint;
@@ -17,13 +16,15 @@ namespace PTG
         public MinusOneNode()
         {
             title = "One Minus";
-            door = new object();
         }
 
         public void OnEnable()
         {
             InitTexture();
-            outPixels = texture.GetPixels();
+            shader = (ComputeShader)Resources.Load("Filters");
+            kernel = shader.FindKernel("OneMinus");
+            texture.enableRandomWrite = true;
+            texture.Create();
         }
 
         public void Init(Vector2 position, float width, float height, GUIStyle inPointStyle, GUIStyle outPointStyle, Action<ConnectionPoint> OnClickInPoint, Action<ConnectionPoint> OnClickOutPoint, Action<NodeBase> OnClickRemoveNode, NodeEditorWindow editor)
@@ -49,26 +50,7 @@ namespace PTG
 
             OnRemoveNode = OnClickRemoveNode;
         }
-
-        public override void StartComputeThread(bool selfCompute)
-        {
-            NodeBase n = null;
-            if (inPoint.connections.Count != 0)
-            {
-                n = inPoint.connections[0].outPoint.node;
-            }
-
-            if (n != null)
-            {
-                if (n.GetTexture() != null)
-                {
-                    source = n.GetTexture().GetPixels();
-
-                    base.StartComputeThread(selfCompute);
-                }
-            }
-        }
-
+        
         public override void Draw()
         {
             base.Draw();
@@ -92,37 +74,37 @@ namespace PTG
 
         public override void Compute(bool selfcompute = false)
         {
-            if(source!= null)
+            NodeBase n = null;
+            if (inPoint.connections.Count != 0)
             {
-                lock(door)
+                n = inPoint.connections[0].outPoint.node;
+            }
+
+            if (n != null)
+            {
+                if (n.GetTexture() != null)
                 {
-                    outPixels = Filter.OneMinus(ressolution, source);
+                    source = n.GetTexture();
                 }
             }
 
-
-            Action MainThreadAction = () =>
+            if (selfcompute)
             {
-                if (selfcompute)
+                if (source != null && texture != null)
                 {
-                    texture.SetPixels(outPixels);
-                    texture.wrapMode = TextureWrapMode.Clamp;
-                    texture.Apply();
-                    editor.Repaint();
+                    shader.SetTexture(kernel, "Result", texture);
+                    shader.SetTexture(kernel, "source", source);
+                    shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
                 }
+            }
 
-                if (outPoint.connections != null)
+            if (outPoint.connections != null)
+            {
+                for (int i = 0; i < outPoint.connections.Count; i++)
                 {
-                    for (int i = 0; i < outPoint.connections.Count; i++)
-                    {
-                        outPoint.connections[i].inPoint.node.StartComputeThread(true);
-                    }
+                    outPoint.connections[i].inPoint.node.Compute(true);
                 }
-            };
-
-            QueueMainThreadFunction(MainThreadAction);
-
-
+            }
         }
     }
 }

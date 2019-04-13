@@ -15,14 +15,13 @@ namespace PTG
         public CheckerNode()
         {
             title = "Checker";
-            door = new object();
 
         }
 
         private void OnEnable()
         {
             InitTexture();
-            outPixels = texture.GetPixels();
+            //outPixels = texture.GetPixels();
             numSquares = 8;
         }
 
@@ -40,7 +39,7 @@ namespace PTG
 
             OnRemoveNode = OnClickRemoveNode;
 
-            StartComputeThread(true);
+            Compute(true);
         }
 
         public override object GetValue(int x, int y)
@@ -73,20 +72,16 @@ namespace PTG
         {
             if(outPixels!= null)
             {
-                lock(door)
-                {
-                    outPixels = Noise.Checker(ressolution,numSquares);
-                    Debug.Log(ressolution);
-                }
+                
             }
 
             Action MainThreadAction = () =>
             {
                 if (selfcompute)
                 {
-                    texture.SetPixels(outPixels);
+                    //texture.SetPixels(outPixels);
                     texture.wrapMode = TextureWrapMode.Clamp;
-                    texture.Apply();
+                    //texture.Apply();
                     editor.Repaint();
                 }
 
@@ -94,12 +89,10 @@ namespace PTG
                 {
                     for (int i = 0; i < outPoint.connections.Count; i++)
                     {
-                        outPoint.connections[i].inPoint.node.StartComputeThread(true);
+                        outPoint.connections[i].inPoint.node.Compute(true);
                     }
                 }
             };
-
-            QueueMainThreadFunction(MainThreadAction);
         }
     }
 }

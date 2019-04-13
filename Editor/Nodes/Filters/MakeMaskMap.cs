@@ -25,13 +25,12 @@ namespace PTG
         public MakeMaskMap()
         {
             title = "Mask Map";
-            door = new object();
         }
 
         private void OnEnable()
         {
             InitTexture();
-            outPixels = texture.GetPixels();
+            //outPixels = texture.GetPixels();
         }
 
         public void Init(Vector2 position, float width, float height, GUIStyle inPointStyle, GUIStyle outPointStyle, Action<ConnectionPoint> OnClickInPoint, Action<ConnectionPoint> OnClickOutPoint, Action<NodeBase> OnClickRemoveNode, NodeEditorWindow editor)
@@ -63,33 +62,33 @@ namespace PTG
             OnRemoveNode = OnClickRemoveNode;
         }
 
-        public override void StartComputeThread(bool selfCompute)
+       /* public override void StartComputeThread(bool selfCompute)
         {
             NodeBase n = null;
             if(inRed.connections.Count!= 0)
             {
                 n = inRed.connections[0].outPoint.node;
-                rChannel = n.GetTexture().GetPixels();
+                //rChannel = n.GetTexture().GetPixels();
             }
             if (inGreen.connections.Count != 0)
             {
                 n = inGreen.connections[0].outPoint.node;
-                gChannel = n.GetTexture().GetPixels();
+                //gChannel = n.GetTexture().GetPixels();
             }
             if (inBlue.connections.Count != 0)
             {
                 n = inBlue.connections[0].outPoint.node;
-                bChannel = n.GetTexture().GetPixels();
+                //bChannel = n.GetTexture().GetPixels();
             }
             if (inAlpha.connections.Count != 0)
             {
                 n = inAlpha.connections[0].outPoint.node;
-                aChannel = n.GetTexture().GetPixels();
+                //aChannel = n.GetTexture().GetPixels();
             }
 
             base.StartComputeThread(selfCompute);
         }
-
+        */
         public override void Draw()
         {
             base.Draw();
@@ -115,29 +114,27 @@ namespace PTG
         {
             if(rChannel!= null && bChannel!= null && gChannel!= null && aChannel!= null)
             {
-                lock(door)
+                for(int i = 0; i<ressolution.x; i++)
                 {
-                    for(int i = 0; i<ressolution.x; i++)
+                    for(int j = 0; j<ressolution.y;j++)
                     {
-                        for(int j = 0; j<ressolution.y;j++)
-                        {
-                            float rValue = rChannel[Filter.GetIndex(i, j, ressolution.x, ressolution.y)].grayscale;
-                            float gValue = gChannel[Filter.GetIndex(i, j, ressolution.x, ressolution.y)].grayscale;
-                            float bValue = bChannel[Filter.GetIndex(i, j, ressolution.x, ressolution.y)].grayscale;
-                            float aValue = aChannel[Filter.GetIndex(i, j, ressolution.x, ressolution.y)].grayscale;
-                            outPixels[Filter.GetIndex(i, j, ressolution.x, ressolution.y)] = new Color(rValue, gValue, bValue, aValue);
-                        }
+                        float rValue = rChannel[Filter.GetIndex(i, j, ressolution.x, ressolution.y)].grayscale;
+                        float gValue = gChannel[Filter.GetIndex(i, j, ressolution.x, ressolution.y)].grayscale;
+                        float bValue = bChannel[Filter.GetIndex(i, j, ressolution.x, ressolution.y)].grayscale;
+                        float aValue = aChannel[Filter.GetIndex(i, j, ressolution.x, ressolution.y)].grayscale;
+                        outPixels[Filter.GetIndex(i, j, ressolution.x, ressolution.y)] = new Color(rValue, gValue, bValue, aValue);
                     }
                 }
+                
             }
 
             Action MainThreadAction = () =>
             {
                 if (selfcompute)
                 {
-                    texture.SetPixels(outPixels);
+                    //texture.SetPixels(outPixels);
                     texture.wrapMode = TextureWrapMode.Clamp;
-                    texture.Apply();
+                    //texture.Apply();
                     editor.Repaint();
                 }
 
@@ -145,12 +142,10 @@ namespace PTG
                 {
                     for (int i = 0; i < outPoint.connections.Count; i++)
                     {
-                        outPoint.connections[i].inPoint.node.StartComputeThread(true);
+                        outPoint.connections[i].inPoint.node.Compute(true);
                     }
                 }
             };
-
-            QueueMainThreadFunction(MainThreadAction);
         }
     }
 }
