@@ -8,9 +8,7 @@ namespace PTG
 {
     public class MixNode : NodeBase
     {
-        Color[] outPixels;
-        Color[] source;
-
+        RenderTexture source;
         Color color1;
         Color color2;
 
@@ -33,7 +31,10 @@ namespace PTG
         public void OnEnable()
         {
             InitTexture();
-            //outPixels = texture.GetPixels();
+            shader = (ComputeShader)Resources.Load("Filters");
+            kernel = shader.FindKernel("ColorMix");
+            texture.enableRandomWrite = true;
+            texture.Create();
         }
 
         public void Init(Vector2 position, float width, float height, GUIStyle inPointStyle, GUIStyle outPointStyle, Action<ConnectionPoint> OnClickInPoint, Action<ConnectionPoint> OnClickOutPoint, Action<NodeBase> OnClickRemoveNode, NodeEditorWindow editor)
@@ -114,33 +115,39 @@ namespace PTG
 
         public override object GetValue(int x, int y)
         {
-            return Filter.GetSingleMixValue(ressolution, x, y, source, color1, color2);
+            return 0;
         }
 
         public override void Compute(bool selfcompute = false)
         {
-           if(source!= null)
-           {
-           }
-
-            Action MainThreadAction = () =>
+            NodeBase n = null;
+            if (inPoint.connections.Count != 0)
             {
-                if (selfcompute)
+                n = inPoint.connections[0].outPoint.node;
+                source = n.GetTexture();
+            }
+            if (selfcompute)
+            {
+                if (source != null && texture!= null)
                 {
-                    //texture.SetPixels(outPixels);
-                    texture.wrapMode = TextureWrapMode.Clamp;
-                    //texture.Apply();
-                    editor.Repaint();
-                }
-
-                if (outPoint.connections != null)
-                {
-                    for (int i = 0; i < outPoint.connections.Count; i++)
+                    if(shader!= null)
                     {
-                        outPoint.connections[i].inPoint.node.Compute(true);
+                        shader.SetTexture(kernel, "Result", texture);
+                        shader.SetTexture(kernel, "source", source);
+                        shader.SetFloats("Color1", color1.r, color1.g, color1.b);
+                        shader.SetFloats("Color2", color2.r, color2.g, color2.b);
+                        shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
                     }
                 }
-            };
+            }
+
+            if (outPoint.connections != null)
+            {
+                for (int i = 0; i < outPoint.connections.Count; i++)
+                {
+                    outPoint.connections[i].inPoint.node.Compute(true);
+                }
+            }
         }
     }
 }

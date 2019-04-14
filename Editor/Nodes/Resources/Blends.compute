@@ -1,0 +1,40 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel BlendMultiply
+#pragma kernel BlendAddition
+#pragma kernel BlendSubstraction
+#pragma kernel BlendMask
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWTexture2D<float4> Result;
+RWTexture2D<float4> A;
+RWTexture2D<float4> B;
+RWTexture2D<float4> Mask;
+
+[numthreads(8,8,1)]
+void BlendMultiply(uint3 id : SV_DispatchThreadID)
+{
+	float3 color = A[id.xy] * B[id.xy];
+	Result[id.xy] = float4(color, 1);
+}
+
+[numthreads(8, 8, 1)]
+void BlendAddition(uint3 id : SV_DispatchThreadID)
+{
+	float3 color = clamp(A[id.xy] + B[id.xy], 0, 1);
+	Result[id.xy] = float4(color, 1);
+}
+
+[numthreads(8, 8, 1)]
+void BlendSubstraction(uint3 id : SV_DispatchThreadID)
+{
+	float3 color = clamp(A[id.xy] - B[id.xy], 0, 1);
+	Result[id.xy] = float4(color, 1);
+}
+
+[numthreads(8, 8, 1)]
+void BlendMask(uint3 id : SV_DispatchThreadID)
+{
+	float3 color = lerp(A[id.xy], B[id.xy], Mask[id.xy]);
+	Result[id.xy] = float4(color, 1);
+}

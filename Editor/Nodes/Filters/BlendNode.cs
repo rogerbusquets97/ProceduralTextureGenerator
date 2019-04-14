@@ -8,13 +8,12 @@ namespace PTG
 {
     public class BlendNode : NodeBase
     {
-        Color[] outPixels;
         Filter.BlendMode mode;
         Filter.BlendMode lastMode;
-        Color[] mask = null;
 
-        Color[] Apixels;
-        Color[] Bpixels;
+        RenderTexture A;
+        RenderTexture B;
+        RenderTexture Mask; 
 
         ConnectionPoint Apoint;
         ConnectionPoint Bpoint;
@@ -32,7 +31,10 @@ namespace PTG
         public void OnEnable()
         {
             InitTexture();
-            //outPixels = texture.GetPixels();
+            shader = (ComputeShader)Resources.Load("Blends");
+            kernel = shader.FindKernel("BlendMultiply");
+            texture.enableRandomWrite = true;
+            texture.Create();
         }
 
         public void Init(Vector2 position, float width, float height, GUIStyle inPointStyle, GUIStyle outPointStyle, Action<ConnectionPoint> OnClickInPoint, Action<ConnectionPoint> OnClickOutPoint, Action<NodeBase> OnClickRemoveNode, NodeEditorWindow editor)
@@ -125,36 +127,81 @@ namespace PTG
         }
         public override object GetValue(int x, int y)
         {
-            if (Apixels != null && Bpixels != null)
-                return Filter.GetSingleBlendValue(ressolution, x, y, Apixels, Bpixels, mode, mask);
-            else
-                return Color.black;
+            return 0;
         }
         public override void Compute(bool selfcompute = false)
         {
-            if(Apixels!= null && Bpixels!= null)
-            {
-               
-            }
-           
-            Action MainThreadAction = () =>
-            {
-                if (selfcompute)
-                {
-                    //texture.SetPixels(outPixels);
-                    texture.wrapMode = TextureWrapMode.Clamp;
-                    //texture.Apply();
-                    editor.Repaint();
-                }
+            NodeBase n = null;
+            NodeBase n2 = null;
 
-                if (outPoint.connections != null)
+            if (Apoint.connections.Count != 0 && Bpoint.connections.Count != 0)
+            {
+                //InPoints only has 1 connection
+                n = Apoint.connections[0].outPoint.node;
+                n2 = Bpoint.connections[0].outPoint.node;
+
+                A = n.GetTexture();
+                B = n2.GetTexture();
+            }
+
+            if(maskPoint.connections.Count != 0)
+            {
+                NodeBase mask = maskPoint.connections[0].outPoint.node;
+                Mask = mask.GetTexture();
+            }
+
+            if (selfcompute)
+            {
+                if (A != null && B != null && texture!= null)
                 {
-                    for(int i = 0; i< outPoint.connections.Count; i++)
+                    switch (mode)
                     {
-                        outPoint.connections[i].inPoint.node.Compute(true);
+                        case Filter.BlendMode.Multiply:
+                            if (shader != null)
+                            {
+                                kernel = shader.FindKernel("BlendMultiply");
+                                shader.SetTexture(kernel, "Result", texture);
+                                shader.SetTexture(kernel, "A", A);
+                                shader.SetTexture(kernel, "B", B);
+                                shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
+                            }
+                            break;
+                        case Filter.BlendMode.Addition:
+                            kernel = shader.FindKernel("BlendAddition");
+                            shader.SetTexture(kernel, "Result", texture);
+                            shader.SetTexture(kernel, "A", A);
+                            shader.SetTexture(kernel, "B", B);
+                            shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
+                            break;
+                        case Filter.BlendMode.Substraction:
+                            kernel = shader.FindKernel("BlendSubstraction");
+                            shader.SetTexture(kernel, "Result", texture);
+                            shader.SetTexture(kernel, "A", A);
+                            shader.SetTexture(kernel, "B", B);
+                            shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
+                            break;
+                        case Filter.BlendMode.Mask:
+                            if (Mask != null)
+                            {
+                                kernel = shader.FindKernel("BlendMask");
+                                shader.SetTexture(kernel, "Result", texture);
+                                shader.SetTexture(kernel, "A", A);
+                                shader.SetTexture(kernel, "B", B);
+                                shader.SetTexture(kernel, "Mask", Mask);
+                                shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
+                            }
+                            break;
                     }
                 }
-            };
+            }
+
+            if (outPoint.connections != null)
+            {
+                for (int i = 0; i < outPoint.connections.Count; i++)
+                {
+                    outPoint.connections[i].inPoint.node.Compute(true);
+                }
+            }
         }
     }
 }

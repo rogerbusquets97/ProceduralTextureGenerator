@@ -126,7 +126,6 @@ float SeamlessfBm(in float2 p)
 	float noise11 = fbm(p + float2(ressolution, ressolution)) * 0.5 + 0.5;
 
 	float totalNoise = u * v * noise00 + u * (1 - v) * noise01 + (1 - u) * v * noise10 + (1 - u) * (1 - v) * noise11;
-
 	float totalValue = (256 * totalNoise) + 50;
 	float r = clamp(noise00, 0, 255);
 	float g = clamp(totalValue, 0, 255);

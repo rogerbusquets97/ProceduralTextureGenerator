@@ -1,12 +1,15 @@
 ﻿// Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel Levels
 #pragma kernel OneMinus
+#pragma kernel ColorMix
 // Create a RenderTexture with enableRandomWrite flag and set it
 // with cs.SetTexture
 RWTexture2D<float4> source;
 RWTexture2D<float4> Result;
 float2 inLevels;
 float2 outLevels;
+float3 Color1;
+float3 Color2;
 
 [numthreads(8,8,1)]
 void Levels (uint3 id : SV_DispatchThreadID)
@@ -27,4 +30,11 @@ void Levels (uint3 id : SV_DispatchThreadID)
 void OneMinus(uint3 id : SV_DispatchThreadID)
 {
 	Result[id.xy] = float4(1 - source[id.xy].r, 1- source[id.xy].g, 1 - source[id.xy].b, 1.);
+}
+
+[numthreads(8, 8, 1)]
+void ColorMix(uint3 id : SV_DispatchThreadID)
+{
+	float3 color = lerp(Color1, Color2, source[id.xy]);
+	Result[id.xy] = float4(color, 1.);
 }
