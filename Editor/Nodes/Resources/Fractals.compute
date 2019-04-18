@@ -40,13 +40,6 @@ float random(in float2 st) {
 		float2(12.9898, 78.233)))*
 		43758.5453123);
 }
-float4 taylorInvSqrt(float4 r)
-{
-	return 1.79284291400159 - 0.85373472095314 * r;
-}
-float3 fade(float3 t) {
-	return t * t*t*(t*(t*6.0 - 15.0) + 10.0);
-}
 
 // Noise
 float snoise(float2 v) {
@@ -112,7 +105,7 @@ float noise(in float2 st)
 float fbm(in float2 st) {
 	float value = 0.0;
 	float amplitude = .5;
-	//st *= frequency;
+	st *= frequency;
 
 	for (int i = 0; i < octaves; i++) {
 		value += amplitude * snoise(st);
@@ -217,10 +210,6 @@ float SeamlessRidged(in float2 p)
 void SeamlessFractalBrownianMotion(uint3 id : SV_DispatchThreadID)
 {
 	float2 st = id.xy;
-	st *= frequency;
-	/*
-	float w = SeamlessfBm(st * 16.);
-	st += 0.2 * float2(w, -w);*/
 
 	float3 color = float3(0.0, 0.0, 0.0);
 	color += SeamlessfBm(st);
@@ -267,7 +256,6 @@ void FractalBillow(uint3 id : SV_DispatchThreadID)
 void FractalBrownianMotion(uint3 id : SV_DispatchThreadID)
 {
 	float2 st = id.xy;
-	st *= frequency;
 
 	float3 color = float3(0.0, 0.0, 0.0);
 	color += fbm(st)*0.5 + 0.5;
