@@ -1,6 +1,5 @@
 ﻿// Each #kernel tells which function to compile; you can have many kernels
-#pragma kernel CSMain
-#pragma kernel Fractal
+#pragma kernel Bricks
 // Create a RenderTexture with enableRandomWrite flag and set it
 // with cs.SetTexture
 
@@ -23,6 +22,8 @@ float2 rotate2D(float2 _st, float _angle)
 float2 tile(float2 _st, float _zoom)
 {
 	_st *= _zoom;
+	_st.x += step(1., fmod(_st.y, 2.0)) * 0.5;
+
 	return frac(_st);
 }
 
@@ -35,7 +36,7 @@ float box(float2 _st, float2 _size, float _smoothEdges) {
 }
 
 [numthreads(8,8,1)]
-void CSMain (uint3 id : SV_DispatchThreadID)
+void Bricks (uint3 id : SV_DispatchThreadID)
 {
     // TODO: insert actual code here!
 
@@ -46,62 +47,9 @@ void CSMain (uint3 id : SV_DispatchThreadID)
 
 	st = tile(st, 4.);
 
-	st = rotate2D(st, angle);
+	//st = rotate2D(st, angle);
 
-	float value = box(st, float2(0.7, 0.7), 0.01);
+	float value = box(st, float2(0.9, 0.9), 0.01);
 	color = float3(value,value,value);
-	Result[id.xy] = float4(color, 1.0);
-}
-
-float random(in float2 st) {
-	return frac(sin(dot(st.xy,
-		float2(16.9898, 78.233)))*
-		43758.5453123);
-}
-
-float noise(in float2 st) {
-	float2 i = floor(st);
-	float2 f = frac(st);
-
-	// Four corners in 2D of a tile
-	float a = random(i);
-	float b = random(i + float2(1.0, 0.0));
-	float c = random(i + float2(0.0, 1.0));
-	float d = random(i + float2(1.0, 1.0));
-
-	float2 u = f * f * (3.0 - 2.0 * f);
-
-	return lerp(a, b, u.x) +
-		(c - a)* u.y * (1.0 - u.x) +
-		(d - b) * u.x * u.y;
-}
-
-float fbm(in float2 st) {
-	// Initial values
-	float value = 0.0;
-	float amplitude = .5;
-	float frequency = 0.;
-	//
-	// Loop of octaves
-	for (int i = 0; i < 6; i++) {
-		value += amplitude * noise(st);
-		st *= 2.;
-		amplitude *= .5;
-	}
-	return value;
-}
-
-[numthreads(8, 8, 1)]
-void Fractal(uint3 id : SV_DispatchThreadID)
-{
-	// TODO: insert actual code here!
-
-	//Result[id.xy] = float4(id.x & id.y, (id.x & 15)/15.0, (id.y & 15)/15.0, 0.0);
-
-	float2 st = float2((float)id.x / ressolution, (float)id.y / ressolution);
-
-	float3 color = float3(0.0, 0.0, 0.0);
-	color += fbm(st*3.0);
-
 	Result[id.xy] = float4(color, 1.0);
 }

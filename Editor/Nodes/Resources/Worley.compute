@@ -42,6 +42,7 @@ float random(in float2 st) {
 		float2(12.9898, 78.233)))*
 		43758.5453123);
 }
+
 //Worley
 float3 dist(float3 x, float3 y, float3 z, bool manhattanDistance) {
 	return manhattanDistance ? abs(x) + abs(y) + abs(z) : (x * x + y * y + z * z);

@@ -9,7 +9,6 @@ namespace PTG
     public class TileGenerator : NodeBase
     {
         ConnectionPoint outPoint;
-        Color[] outPixels;
 
         public TileGenerator()
         {
@@ -19,7 +18,10 @@ namespace PTG
         private void OnEnable()
         {
             InitTexture();
-            //outPixels = texture.GetPixels();
+            shader = (ComputeShader)Resources.Load("TileGenerator");
+            kernel = shader.FindKernel("Bricks");
+            texture.enableRandomWrite = true;
+            texture.Create();
         }
 
         public void Init(Vector2 position, float width, float height, GUIStyle inPointStyle, GUIStyle outPointStyle, Action<ConnectionPoint> OnClickInPoint, Action<ConnectionPoint> OnClickOutPoint, Action<NodeBase> OnClickRemoveNode, NodeEditorWindow editor)
@@ -66,29 +68,23 @@ namespace PTG
 
         public override void Compute(bool selfcompute = false)
         {
-            if (outPixels != null)
+            if(selfcompute)
             {
-                
+                if(shader!= null)
+                {
+                    shader.SetTexture(kernel, "Result", texture);
+                    shader.SetFloat("ressolution", (float)ressolution.x);
+                    shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
+                }
             }
 
-            Action MainThreadAction = () =>
+            if (outPoint.connections != null)
             {
-                if (selfcompute)
+                for (int i = 0; i < outPoint.connections.Count; i++)
                 {
-                    //texture.SetPixels(outPixels);
-                    texture.wrapMode = TextureWrapMode.Clamp;
-                    //texture.Apply();
-                    editor.Repaint();
+                    outPoint.connections[i].inPoint.node.Compute(true);
                 }
-
-                if (outPoint.connections != null)
-                {
-                    for (int i = 0; i < outPoint.connections.Count; i++)
-                    {
-                        outPoint.connections[i].inPoint.node.Compute(true);
-                    }
-                }
-            };
+            }
         }
     }
 }
