@@ -6,14 +6,29 @@
 RWTexture2D<float4> Result;
 float ressolution;
 float angle;
+float size;
+float brickWidth;
+float brickHeight;
+float brickOffset;
+float brickGradient;
+float gradientAngle;
+float gradientStrength;
+float mortarWidth;
+float mortarHeight;
+float brickRotation;
 
+#define PI 3.14159265358979323846
 
-float2 rotate2D(float2 _st, float _angle)
-{
+float random(in float2 st) {
+	return frac(sin(dot(st.xy,
+		float2(12.9898, 78.233)))*
+		43758.5453123);
+}
+float2 rotate2D(float2 _st, float _angle) {
 	_st -= 0.5;
-
 	float2x2 rot = { cos(_angle), -sin(_angle),
-					 sin(_angle),  cos(_angle) };
+		sin(_angle), cos(_angle) };
+
 	_st = mul(rot, _st);
 	_st += 0.5;
 	return _st;
@@ -22,7 +37,7 @@ float2 rotate2D(float2 _st, float _angle)
 float2 tile(float2 _st, float _zoom)
 {
 	_st *= _zoom;
-	_st.x += step(1., fmod(_st.y, 2.0)) * 0.5;
+	_st.x += step(1., fmod(_st.y, 2.0)) * brickOffset;
 
 	return frac(_st);
 }
@@ -32,7 +47,9 @@ float box(float2 _st, float2 _size, float _smoothEdges) {
 	float2 aa = float2(_smoothEdges*0.5, _smoothEdges*0.5);
 	float2 uv = smoothstep(_size, _size + aa, _st);
 	uv *= smoothstep(_size, _size + aa, float(1.0) - _st);
-	return uv.x*uv.y;
+
+	_st = rotate2D(_st, PI * gradientAngle);
+	return (uv.x * (1. - ((_st.x - brickGradient)*gradientStrength)))*uv.y;
 }
 
 [numthreads(8,8,1)]
@@ -45,11 +62,12 @@ void Bricks (uint3 id : SV_DispatchThreadID)
 	float2 st = float2((float)id.x / ressolution, (float)id.y / ressolution);
 	float3 color = float3(0,0,0);
 
-	st = tile(st, 4.);
+	st /= float2(brickWidth, brickHeight);
+	st = tile(st, size);
 
-	//st = rotate2D(st, angle);
+	st = rotate2D(st, PI * brickRotation);
 
-	float value = box(st, float2(0.9, 0.9), 0.01);
+	float value = box(st, float2(mortarWidth, mortarHeight), 0.01);
 	color = float3(value,value,value);
 	Result[id.xy] = float4(color, 1.0);
 }
