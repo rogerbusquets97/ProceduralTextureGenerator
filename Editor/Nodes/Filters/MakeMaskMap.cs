@@ -8,12 +8,10 @@ namespace PTG
 {
     public class MakeMaskMap : NodeBase
     {
-        Color[] outPixels;
-
-        Color[] rChannel;
-        Color[] gChannel;
-        Color[] bChannel;
-        Color[] aChannel;
+        RenderTexture R;
+        RenderTexture G;
+        RenderTexture B;
+        RenderTexture A;
 
         ConnectionPoint inRed;
         ConnectionPoint inGreen;
@@ -30,7 +28,10 @@ namespace PTG
         private void OnEnable()
         {
             InitTexture();
-            //outPixels = texture.GetPixels();
+            shader = (ComputeShader)Resources.Load("MaskMap");
+            kernel = shader.FindKernel("MaskMap");
+            texture.enableRandomWrite = true;
+            texture.Create();
         }
 
         public void Init(Vector2 position, float width, float height, GUIStyle inPointStyle, GUIStyle outPointStyle, Action<ConnectionPoint> OnClickInPoint, Action<ConnectionPoint> OnClickOutPoint, Action<NodeBase> OnClickRemoveNode, NodeEditorWindow editor)
@@ -62,42 +63,14 @@ namespace PTG
             OnRemoveNode = OnClickRemoveNode;
         }
 
-       /* public override void StartComputeThread(bool selfCompute)
-        {
-            NodeBase n = null;
-            if(inRed.connections.Count!= 0)
-            {
-                n = inRed.connections[0].outPoint.node;
-                //rChannel = n.GetTexture().GetPixels();
-            }
-            if (inGreen.connections.Count != 0)
-            {
-                n = inGreen.connections[0].outPoint.node;
-                //gChannel = n.GetTexture().GetPixels();
-            }
-            if (inBlue.connections.Count != 0)
-            {
-                n = inBlue.connections[0].outPoint.node;
-                //bChannel = n.GetTexture().GetPixels();
-            }
-            if (inAlpha.connections.Count != 0)
-            {
-                n = inAlpha.connections[0].outPoint.node;
-                //aChannel = n.GetTexture().GetPixels();
-            }
-
-            base.StartComputeThread(selfCompute);
-        }
-        */
         public override void Draw()
         {
             base.Draw();
-            GUILayout.BeginArea(rect);
-            if (texture != null)
-            {
-                GUI.DrawTexture(new Rect((rect.width / 4) - 15, (rect.height / 4) - 8, rect.width - 20, rect.width - 20), texture);
-            }
-            GUILayout.EndArea();
+            GUI.Label(new Rect(inRed.rect.x + 15, inRed.rect.y, 400, 40), "Metallic");
+            GUI.Label(new Rect(inGreen.rect.x + 15, inGreen.rect.y, 400, 40), "AO");
+            GUI.Label(new Rect(inBlue.rect.x + 15, inBlue.rect.y, 400, 40), "Displacement");
+            GUI.Label(new Rect(inAlpha.rect.x + 15, inAlpha.rect.y, 400, 40), "Specular");
+
         }
 
         public override void DrawInspector()
@@ -112,40 +85,48 @@ namespace PTG
 
         public override void Compute(bool selfcompute = false)
         {
-            if(rChannel!= null && bChannel!= null && gChannel!= null && aChannel!= null)
+            if (selfcompute)
             {
-                for(int i = 0; i<ressolution.x; i++)
+                NodeBase n = null;
+                if (inRed.connections.Count != 0)
                 {
-                    for(int j = 0; j<ressolution.y;j++)
-                    {
-                        float rValue = rChannel[Filter.GetIndex(i, j, ressolution.x, ressolution.y)].grayscale;
-                        float gValue = gChannel[Filter.GetIndex(i, j, ressolution.x, ressolution.y)].grayscale;
-                        float bValue = bChannel[Filter.GetIndex(i, j, ressolution.x, ressolution.y)].grayscale;
-                        float aValue = aChannel[Filter.GetIndex(i, j, ressolution.x, ressolution.y)].grayscale;
-                        outPixels[Filter.GetIndex(i, j, ressolution.x, ressolution.y)] = new Color(rValue, gValue, bValue, aValue);
-                    }
+                    n = inRed.connections[0].outPoint.node;
+                    R = n.GetTexture();
                 }
-                
+                if (inGreen.connections.Count != 0)
+                {
+                    n = inGreen.connections[0].outPoint.node;
+                    G = n.GetTexture();
+                }
+                if (inBlue.connections.Count != 0)
+                {
+                    n = inBlue.connections[0].outPoint.node;
+                    B = n.GetTexture();
+                }
+                if (inAlpha.connections.Count != 0)
+                {
+                    n = inAlpha.connections[0].outPoint.node;
+                    A = n.GetTexture();
+                }
+
+                if (R != null && G != null && B != null && A != null && texture!= null)
+                {
+                    shader.SetTexture(kernel, "Result", texture);
+                    shader.SetTexture(kernel, "R", R);
+                    shader.SetTexture(kernel, "G", G);
+                    shader.SetTexture(kernel, "B", B);
+                    shader.SetTexture(kernel, "A", A);
+                    shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
+                }
             }
 
-            Action MainThreadAction = () =>
+            if (outPoint.connections != null)
             {
-                if (selfcompute)
+                for (int i = 0; i < outPoint.connections.Count; i++)
                 {
-                    //texture.SetPixels(outPixels);
-                    texture.wrapMode = TextureWrapMode.Clamp;
-                    //texture.Apply();
-                    editor.Repaint();
+                    outPoint.connections[i].inPoint.node.Compute(true);
                 }
-
-                if (outPoint.connections != null)
-                {
-                    for (int i = 0; i < outPoint.connections.Count; i++)
-                    {
-                        outPoint.connections[i].inPoint.node.Compute(true);
-                    }
-                }
-            };
+            }
         }
     }
 }

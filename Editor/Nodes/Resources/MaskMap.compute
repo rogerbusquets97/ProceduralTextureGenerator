@@ -1,0 +1,18 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel MaskMap
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWTexture2D<float4> Result;
+
+RWTexture2D<float4> R;
+RWTexture2D<float4> G;
+RWTexture2D<float4> B;
+RWTexture2D<float4> A;
+
+
+[numthreads(8,8,1)]
+void MaskMap (uint3 id : SV_DispatchThreadID)
+{
+	Result[id.xy] = float4(R[id.xy].r, G[id.xy].g, B[id.xy].b, A[id.xy].r);
+}
