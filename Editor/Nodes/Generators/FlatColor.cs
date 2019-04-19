@@ -8,10 +8,8 @@ namespace PTG
 {
     public class FlatColor : NodeBase
     {
-        Color color = Color.black;
+        Color color;
         Color lastColor;
-        Color[] pixels;
-
         ConnectionPoint outPoint; 
 
         public FlatColor()
@@ -24,7 +22,10 @@ namespace PTG
         public void OnEnable()
         {
             InitTexture();
-            //pixels = texture.GetPixels();
+            shader = (ComputeShader)Resources.Load("Color");
+            kernel = shader.FindKernel("FlatColor");
+            texture.enableRandomWrite = true;
+            texture.Create();
         }
 
         public void Init(Vector2 position, float width, float height, GUIStyle inPointStyle, GUIStyle outPointStyle, Action<ConnectionPoint> OnClickInPoint, Action<ConnectionPoint> OnClickOutPoint, Action<NodeBase> OnClickRemoveNode, NodeEditorWindow editor)
@@ -43,14 +44,8 @@ namespace PTG
             Compute(true);
         }
 
-        /*public override void StartComputeThread(bool selfCompute)
-        {
-            base.StartComputeThread(selfCompute);
-        }*/
-
         public override void Draw()
         {
-            base.Draw();
             base.Draw();
             GUILayout.BeginArea(rect);
             if (texture != null)
@@ -77,45 +72,25 @@ namespace PTG
             base.DrawInspector();
         }
 
-        private void FillColor(Color color)
-        {
-            if(pixels!= null)
-            {
-                for(int x = 0; x<ressolution.x; x++)
-                {
-                    for(int y = 0; y< ressolution.y; y++)
-                    {
-                        pixels[Filter.GetIndex(x, y, ressolution.x, ressolution.y)] = color;
-                    }
-                }
-            }
-        }
-
         public override void Compute(bool selfcompute = false)
         {
-            if(pixels!= null)
+            if (selfcompute)
             {
-              
+                if (color != null)
+                {
+                    shader.SetTexture(kernel, "Result", texture);
+                    shader.SetFloats("MainColor", color.r, color.g, color.b, color.a);
+                    shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
+                }
             }
 
-            Action MainThreadAction = () =>
+            if (outPoint.connections != null)
             {
-                if (selfcompute)
+                for (int i = 0; i < outPoint.connections.Count; i++)
                 {
-                    //texture.SetPixels(pixels);
-                    texture.wrapMode = TextureWrapMode.Clamp;
-                    //texture.Apply();
-                    editor.Repaint();
+                    outPoint.connections[i].inPoint.node.Compute(true);
                 }
-
-                if (outPoint.connections != null)
-                {
-                    for (int i = 0; i < outPoint.connections.Count; i++)
-                    {
-                        outPoint.connections[i].inPoint.node.Compute(true);
-                    }
-                }
-            };
+            }
         }
     }
 
