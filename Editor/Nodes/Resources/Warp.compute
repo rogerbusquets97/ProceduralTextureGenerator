@@ -1,0 +1,23 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel Warp
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWTexture2D<float4> Result;
+RWTexture2D<float4> source;
+RWTexture2D<float4> warper;
+float strength;
+float ressolution; 
+
+[numthreads(8,8,1)]
+void Warp (uint3 id : SV_DispatchThreadID)
+{
+	float2 uv = id.xy / ressolution;
+	float w = warper[uv*ressolution].r;
+	float2 p = float2( w, w);
+
+	float2 st = uv + p * strength;
+	st = frac(st);
+	Result[id.xy] = float4(source[st * ressolution].xyz, 1.);
+
+}

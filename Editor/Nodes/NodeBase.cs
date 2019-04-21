@@ -7,7 +7,7 @@ using System.Threading;
 
 namespace PTG
 {
-    public enum NodeType { None = 0, Fractal, Cellular, Blend,Levels, Normal, OneMinus, Color, Mix,MaskMap, Checker, Generator}
+    public enum NodeType { None = 0, Fractal, Cellular, Blend,Levels, Normal, OneMinus, Color, Mix,MaskMap, Checker, Generator, Warp}
 
     public class NodeBase : ScriptableObject
     {
@@ -32,7 +32,7 @@ namespace PTG
        
         public void InitTexture()
         {
-            ressolution = new Vector2Int(1024, 1024);
+            ressolution = new Vector2Int(2048, 2048);
             texture = new RenderTexture(ressolution.x, ressolution.y, 24);
         }
         public RenderTexture GetTexture()

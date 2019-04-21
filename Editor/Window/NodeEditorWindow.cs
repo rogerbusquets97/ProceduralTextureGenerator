@@ -23,6 +23,8 @@ namespace PTG
         private GUIStyle inPointStyle;
         private GUIStyle outPointStyle;
 
+        //x
+
         [MenuItem("Tools/Procedural Texture Generator")]
         private static void LaunchEditor()
         {
@@ -231,6 +233,7 @@ namespace PTG
             genericMenu.AddItem(new GUIContent("Operators/Mask Map"), false, () => OnClickAddNode(mousePosition, NodeType.MaskMap));
             genericMenu.AddItem(new GUIContent("Generators/Checker Texture"), false, () => OnClickAddNode(mousePosition, NodeType.Checker));
             genericMenu.AddItem(new GUIContent("Generators/Tile Generator"), false, () => OnClickAddNode(mousePosition, NodeType.Generator));
+            genericMenu.AddItem(new GUIContent("Filters/Warp"), false, () => OnClickAddNode(mousePosition, NodeType.Warp));
 
             genericMenu.ShowAsContext();
         }
@@ -304,6 +307,12 @@ namespace PTG
                     generator.Init(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
                     nodes.Add(generator);
                     Selection.activeObject = generator;
+                    break;
+                case NodeType.Warp:
+                    WarpNode warp = WarpNode.CreateInstance<WarpNode>();
+                    warp.Init(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
+                    nodes.Add(warp);
+                    Selection.activeObject = warp;
                     break;
             }
         }

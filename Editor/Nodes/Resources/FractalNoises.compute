@@ -1,0 +1,27 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#include "Assets/ProceduralTextureGenerator/Editor/Nodes/Resources/Noises.compute"
+#pragma kernel Liquid
+
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWTexture2D<float4> Result;
+float ressolution;
+int scale_x;
+int scale_y;
+float scale_value;
+int start_band;
+int end_band;
+float persistance;
+int type;
+
+[numthreads(8, 8, 1)]
+void Liquid(uint3 id : SV_DispatchThreadID)
+{
+	float2 st = float2(id.x / ressolution, id.y / ressolution);
+	
+	float v = fbm(st,scale_x, scale_y, scale_value, start_band, end_band, persistance, type);
+
+	float3 color = float3(v, v, v);
+	Result[id.xy] = float4(color, 1.);
+}

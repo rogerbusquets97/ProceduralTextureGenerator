@@ -69,7 +69,7 @@ namespace PTG
             GUI.Label(new Rect(inRed.rect.x + 15, inRed.rect.y, 400, 40), "Metallic");
             GUI.Label(new Rect(inGreen.rect.x + 15, inGreen.rect.y, 400, 40), "AO");
             GUI.Label(new Rect(inBlue.rect.x + 15, inBlue.rect.y, 400, 40), "Detail Map");
-            GUI.Label(new Rect(inAlpha.rect.x + 15, inAlpha.rect.y, 400, 40), "Specular");
+            GUI.Label(new Rect(inAlpha.rect.x + 15, inAlpha.rect.y, 400, 40), "Smoothness");
 
         }
 

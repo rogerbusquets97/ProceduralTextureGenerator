@@ -6,19 +6,27 @@ using System;
 
 namespace PTG
 {
-    public enum FractalType { FractalBrownianMotion, Billow, Ridged };
+    public enum FractalType { FractalBrownianMotion = 0, Billow, Ridged };
     public class FractalNode : NodeBase
     {
         ConnectionPoint outPoint;
 
-        FractalType type;
+        public FractalType type;
         FractalType lastType;
-        float frequency;
-        float lastFrequency;
-        int octaves;
-        int lastOctaves;
-        bool seamless;
-        bool lastSeamless;
+
+        public int     scale_x;
+        public int     scale_y;
+        public float   scale_value;
+        public int     start_band;
+        public int     end_band;
+        public float   persistance;
+
+        int     last_scale_x;
+        int     last_scale_y;
+        float   last_scale_value;
+        int     last_start_band;
+        int     last_end_band;
+        float   last_persistance;
 
 
         public FractalNode()
@@ -26,19 +34,27 @@ namespace PTG
             title = "Fractal Noise";
             type = FractalType.FractalBrownianMotion;
             lastType = type;
-            frequency = 0.001f;
-            lastFrequency = frequency;
-            octaves = 20;
-            lastOctaves = octaves;
-            seamless = false;
-            lastSeamless = seamless;
+
+            scale_x = 4;
+            scale_y = 4;
+            scale_value = 0.7f;
+            start_band = 1;
+            end_band = 8;
+            persistance = 0.5f;
+
+            last_scale_x = scale_x;
+            last_scale_y = scale_y;
+            last_scale_value = scale_value;
+            last_start_band = start_band;
+            last_end_band = end_band;
+            last_persistance = persistance;
         }
 
         private void OnEnable()
         {
             InitTexture();
-            shader = (ComputeShader)Resources.Load("Fractals");
-            kernel = shader.FindKernel("FractalBrownianMotion");
+            shader = (ComputeShader)Resources.Load("FractalNoises");
+            kernel = shader.FindKernel("Liquid");
             texture.enableRandomWrite = true;
             texture.Create();
         }
@@ -75,78 +91,56 @@ namespace PTG
 
             GUILayout.EndArea();
 
-            if(lastOctaves!= octaves || lastFrequency!= frequency )
+           
+            if(last_end_band != end_band || last_scale_value!= scale_value || last_scale_x != scale_x || last_scale_y!= scale_y || last_start_band!= start_band || last_persistance!= persistance || lastType!= type)
             {
-                lastFrequency = frequency;
-                lastOctaves = octaves;
-                Compute(true);
-            }
-
-            if(lastType!= type || lastSeamless!= seamless)
-            {
+                last_scale_x = scale_x;
+                last_scale_y = scale_y;
+                last_scale_value = scale_value;
+                last_start_band = start_band;
+                last_end_band = end_band;
+                last_persistance = persistance;
                 lastType = type;
-                lastSeamless = seamless;
-
-                switch(type)
-                {
-                    case FractalType.FractalBrownianMotion:
-                        if(!seamless)
-                        {
-                            kernel = shader.FindKernel("FractalBrownianMotion");
-                        }
-                        else
-                        {
-                            kernel = shader.FindKernel("SeamlessFractalBrownianMotion");
-                        }
-                        break;
-                    case FractalType.Billow:
-                        if(!seamless)
-                        {
-                            kernel = shader.FindKernel("FractalBillow");
-                        }
-                        else
-                        {
-                            kernel = shader.FindKernel("SeamlessFractalBillow");
-                        }
-                        break;
-                    case FractalType.Ridged:
-                        if(!seamless)
-                        {
-                            kernel = shader.FindKernel("FractalRidged");
-                        }
-                        else
-                        {
-                            kernel = shader.FindKernel("SeamlessFractalRidged");
-                        }
-                        break;
-                }
-
                 Compute(true);
             }
-              
-
         }
 
         public override void DrawInspector()
         {
-            GUILayout.Space(10);
+
             GUILayout.BeginVertical("Box");
-            EditorGUILayout.LabelField("Octaves");
-            octaves = EditorGUILayout.IntField(octaves);
+            EditorGUILayout.LabelField("Scale X");
+            scale_x = EditorGUILayout.IntField(scale_x);
             GUILayout.EndVertical();
 
             GUILayout.BeginVertical("Box");
-            EditorGUILayout.LabelField("Frequency");
-            frequency = EditorGUILayout.FloatField(frequency);
+            EditorGUILayout.LabelField("Scale Y");
+            scale_y = EditorGUILayout.IntField(scale_y);
+            GUILayout.EndVertical();
+
+            GUILayout.BeginVertical("Box");
+            EditorGUILayout.LabelField("Start Band");
+            start_band = EditorGUILayout.IntField(start_band);
+            GUILayout.EndVertical();
+
+            GUILayout.BeginVertical("Box");
+            EditorGUILayout.LabelField("End Band");
+            end_band = EditorGUILayout.IntField(end_band);
+            GUILayout.EndVertical();
+
+            GUILayout.BeginVertical("Box");
+            EditorGUILayout.LabelField("Scale Value");
+            scale_value = EditorGUILayout.Slider(scale_value,0f,1f);
+            GUILayout.EndVertical();
+
+            GUILayout.BeginVertical("Box");
+            EditorGUILayout.LabelField("Persistance");
+            persistance = EditorGUILayout.Slider(persistance,0f,1f);
             GUILayout.EndVertical();
 
             GUILayout.BeginVertical("Box");
             EditorGUILayout.LabelField("Fractal Type");
             type = (FractalType)EditorGUILayout.EnumPopup(type);
-            GUILayout.EndVertical();
-
-            GUILayout.BeginVertical("Box");
-            seamless = EditorGUILayout.Toggle("Seamless", seamless);
             GUILayout.EndVertical();
 
             base.DrawInspector();
@@ -160,8 +154,13 @@ namespace PTG
                 {
                     shader.SetTexture(kernel, "Result", texture);
                     shader.SetFloat("ressolution", (float)ressolution.x);
-                    shader.SetInt("octaves", octaves);
-                    shader.SetFloat("frequency", frequency);
+                    shader.SetInt("scale_x", scale_x);
+                    shader.SetInt("scale_y", scale_y);
+                    shader.SetInt("start_band", start_band);
+                    shader.SetInt("end_band", end_band);
+                    shader.SetFloat("scale_value", scale_value);
+                    shader.SetFloat("persistance", persistance);
+                    shader.SetInt("type", (int)type);
                     shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
                 }
             }
