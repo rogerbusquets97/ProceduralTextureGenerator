@@ -234,6 +234,7 @@ namespace PTG
             genericMenu.AddItem(new GUIContent("Generators/Checker Texture"), false, () => OnClickAddNode(mousePosition, NodeType.Checker));
             genericMenu.AddItem(new GUIContent("Generators/Tile Generator"), false, () => OnClickAddNode(mousePosition, NodeType.Generator));
             genericMenu.AddItem(new GUIContent("Filters/Warp"), false, () => OnClickAddNode(mousePosition, NodeType.Warp));
+            genericMenu.AddItem(new GUIContent("Filters/Blur"), false, () => OnClickAddNode(mousePosition, NodeType.Blur));
 
             genericMenu.ShowAsContext();
         }
@@ -313,6 +314,12 @@ namespace PTG
                     warp.Init(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
                     nodes.Add(warp);
                     Selection.activeObject = warp;
+                    break;
+                case NodeType.Blur:
+                    BlurNode blur = BlurNode.CreateInstance<BlurNode>();
+                    blur.Init(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
+                    nodes.Add(blur);
+                    Selection.activeObject = blur;
                     break;
             }
         }

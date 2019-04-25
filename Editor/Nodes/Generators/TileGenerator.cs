@@ -153,7 +153,7 @@ namespace PTG
 
             GUILayout.BeginVertical("Box");
             EditorGUILayout.LabelField("Brick Offset");
-            brickOffset = EditorGUILayout.Slider(brickOffset, 0.1f, 0.9f);
+            brickOffset = EditorGUILayout.Slider(brickOffset, 0f, 0.9f);
             GUILayout.EndVertical();
 
             GUILayout.BeginVertical("Box");
