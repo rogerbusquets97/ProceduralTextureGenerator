@@ -1,0 +1,31 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel AmbientOcclusion
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWTexture2D<float4> Result;
+RWTexture2D<float4> source;
+float ressolution;
+float samples;
+
+[numthreads(8,8,1)]
+void AmbientOcclusion(uint3 id : SV_DispatchThreadID)
+{
+	float value = source[id.xy].r;
+	float count = 0.;
+
+	for (int i = -8; i < 8; ++i)
+	{
+		for (int j = -8; j < 8; ++j)
+		{
+			if (source[uint2(id.x + i, id.y + j)].r > value)
+			{
+				count++;
+			}
+		}
+	}
+
+	float occlusion = 1. - (count/8.);
+	float res = lerp(occlusion, 1., value);
+    Result[id.xy] = float4(occlusion, occlusion, occlusion, 1.);
+}

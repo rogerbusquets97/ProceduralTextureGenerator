@@ -235,6 +235,7 @@ namespace PTG
             genericMenu.AddItem(new GUIContent("Generators/Tile Generator"), false, () => OnClickAddNode(mousePosition, NodeType.Generator));
             genericMenu.AddItem(new GUIContent("Filters/Warp"), false, () => OnClickAddNode(mousePosition, NodeType.Warp));
             genericMenu.AddItem(new GUIContent("Filters/Blur"), false, () => OnClickAddNode(mousePosition, NodeType.Blur));
+            genericMenu.AddItem(new GUIContent("Filters/Ambient Occlusion"), false, () => OnClickAddNode(mousePosition, NodeType.Occlusion));
 
             genericMenu.ShowAsContext();
         }
@@ -320,6 +321,12 @@ namespace PTG
                     blur.Init(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
                     nodes.Add(blur);
                     Selection.activeObject = blur;
+                    break;
+                case NodeType.Occlusion:
+                    AmbientOcclusionNode occlusion = AmbientOcclusionNode.CreateInstance<AmbientOcclusionNode>();
+                    occlusion.Init(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
+                    nodes.Add(occlusion);
+                    Selection.activeObject = occlusion;
                     break;
             }
         }

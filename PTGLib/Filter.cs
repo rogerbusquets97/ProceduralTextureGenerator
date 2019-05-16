@@ -4,7 +4,7 @@ using UnityEngine;
 
 public static class Filter
 {
-    public enum BlendMode { Multiply, Addition, Substraction, Mask}
+    public enum BlendMode { Multiply, Addition, Substraction, Mask, Screen, Overlay, Max, Min, Divide, AddSub}
 
     private delegate void FilterMethod(Vector2Int ressolution, ref Color[] outPixels, params object[] parameters);
 
