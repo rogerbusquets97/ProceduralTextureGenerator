@@ -73,6 +73,7 @@ namespace PTG
 
         public override void Compute(bool selfcompute = false)
         {
+            Debug.Log("Compute");
             NodeBase n = null;
             if (inPoint.connections.Count != 0)
             {

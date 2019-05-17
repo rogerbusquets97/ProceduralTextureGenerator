@@ -32,7 +32,7 @@ namespace PTG
        
         public void InitTexture()
         {
-            ressolution = new Vector2Int(2048, 2048);
+            ressolution = new Vector2Int(1024, 1024);
             texture = new RenderTexture(ressolution.x, ressolution.y, 24);
         }
         public RenderTexture GetTexture()

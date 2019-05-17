@@ -14,18 +14,18 @@ void AmbientOcclusion(uint3 id : SV_DispatchThreadID)
 	float value = source[id.xy].r;
 	float count = 0.;
 
-	for (int i = -8; i < 8; ++i)
+	for (int i = -64; i < 64; ++i)
 	{
-		for (int j = -8; j < 8; ++j)
+		for (int j = -64; j < 64; ++j)
 		{
 			if (source[uint2(id.x + i, id.y + j)].r > value)
 			{
-				count++;
+				float weight = (sqrt(((i*i) + (j*j)))/128.);
+				count+=weight;
 			}
 		}
 	}
 
-	float occlusion = 1. - (count/8.);
-	float res = lerp(occlusion, 1., value);
+	float occlusion = 1 - (count/(128*128));
     Result[id.xy] = float4(occlusion, occlusion, occlusion, 1.);
 }

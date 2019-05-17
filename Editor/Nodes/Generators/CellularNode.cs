@@ -89,6 +89,8 @@ namespace PTG
             {
                 lastFrequency = frequency;
                 lastOctaves = octaves;
+                lastYScale = YScale;
+                lastXScale = XScale;
                 Compute(true);
             }
 
@@ -150,9 +152,11 @@ namespace PTG
                         }
                         break;
                 }
+
+                Compute(true);
             }
 
-            Compute(true);
+            
         }
 
         public override void DrawInspector()
