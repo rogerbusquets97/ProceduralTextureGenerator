@@ -105,7 +105,7 @@ namespace PTG
             }
 
             if(lastSize != size || lastBrickWidth !=  brickWidth || lastbBrickHeight != brickHeight || lastOffset!= brickOffset || lastBrickGradient!= brickGradient
-                || lastGradientAngle!= gradientAngle || lastGradientAngle!= gradientStrength || lastMortarWidth != mortarWidth || lastMortarHeight!= mortarHeight
+                || lastGradientAngle!= gradientAngle || lastGradientStrength!= gradientStrength || lastMortarWidth != mortarWidth || lastMortarHeight!= mortarHeight
                 || lastBrickRotation!= brickRotation)
             {
                 lastSize = size;

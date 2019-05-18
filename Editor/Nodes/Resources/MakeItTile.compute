@@ -1,0 +1,58 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel Tile
+
+
+#define PI 3.14159265358979323846
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWTexture2D<float4> Result;
+RWTexture2D<float4> source;
+float ressolution;
+float2 tilling;
+float offsetX;
+float offsetY;
+float scale;
+float angle;
+float globalangle;
+
+float2 rotate2D(float2 _st, float _angle) {
+	_st -= 0.5;
+	float2x2 rot = { cos(_angle), -sin(_angle),
+		sin(_angle), cos(_angle) };
+
+	_st = mul(rot, _st);
+	_st += 0.5;
+	return _st;
+}
+
+float random(float2 st) {
+	return frac(sin(dot(st.xy,
+		float2(12.9898, 78.233)))*
+		43758.5453123);
+}
+
+float2x2 scale2D(float2 _scale)
+{
+	float2x2 mat = { _scale.x,0.0,0.0,_scale.y };
+	return mat;
+}
+[numthreads(8,8,1)]
+void Tile (uint3 id : SV_DispatchThreadID)
+{
+    // TODO: insert actual code here!
+	float2 uv = id.xy / ressolution;
+	float2 st = uv * tilling;
+	
+	st.x += step(0., fmod(st.y, 2.)) * offsetX;
+	st.y += step(0., fmod(st.x, 2.)) * offsetY;
+
+	st = rotate2D(st, PI * globalangle);
+	float gray = random(round(st + float2(0.5,0.5)));
+
+	st = rotate2D(frac(st), PI * angle);
+	st = mul(scale2D(float2(scale, scale)), frac(st));
+
+
+	float4 color = source[(frac(st))*ressolution]*gray;
+	Result[id.xy] = color;
+}
