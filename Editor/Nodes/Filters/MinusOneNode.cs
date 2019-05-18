@@ -85,6 +85,10 @@ namespace PTG
                 if (n.GetTexture() != null)
                 {
                     source = n.GetTexture();
+                    if(n.ressolution != this.ressolution)
+                    {
+                        ChangeRessolution(n.ressolution.x);
+                    }
                 }
             }
 
@@ -92,9 +96,12 @@ namespace PTG
             {
                 if (source != null && texture != null)
                 {
-                    shader.SetTexture(kernel, "Result", texture);
-                    shader.SetTexture(kernel, "source", source);
-                    shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
+                    if (ressolution.x / 8 > 0)
+                    {
+                        shader.SetTexture(kernel, "Result", texture);
+                        shader.SetTexture(kernel, "source", source);
+                        shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
+                    }
                 }
             }
 

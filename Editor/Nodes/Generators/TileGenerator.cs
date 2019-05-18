@@ -180,19 +180,22 @@ namespace PTG
             {
                 if(shader!= null)
                 {
-                    shader.SetTexture(kernel, "Result", texture);
-                    shader.SetFloat("ressolution", (float)ressolution.x);
-                    shader.SetFloat("size", size);
-                    shader.SetFloat("brickWidth", brickWidth);
-                    shader.SetFloat("brickHeight", brickHeight);
-                    shader.SetFloat("brickOffset", brickOffset);
-                    shader.SetFloat("brickGradient", brickGradient);
-                    shader.SetFloat("gradientAngle", gradientAngle);
-                    shader.SetFloat("gradientStrength", gradientStrength);
-                    shader.SetFloat("mortarHeight", mortarHeight);
-                    shader.SetFloat("mortarWidth", mortarWidth);
-                    shader.SetFloat("brickRotation", brickRotation);
-                    shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
+                    if (ressolution.x / 8 > 0)
+                    {
+                        shader.SetTexture(kernel, "Result", texture);
+                        shader.SetFloat("ressolution", (float)ressolution.x);
+                        shader.SetFloat("size", size);
+                        shader.SetFloat("brickWidth", brickWidth);
+                        shader.SetFloat("brickHeight", brickHeight);
+                        shader.SetFloat("brickOffset", brickOffset);
+                        shader.SetFloat("brickGradient", brickGradient);
+                        shader.SetFloat("gradientAngle", gradientAngle);
+                        shader.SetFloat("gradientStrength", gradientStrength);
+                        shader.SetFloat("mortarHeight", mortarHeight);
+                        shader.SetFloat("mortarWidth", mortarWidth);
+                        shader.SetFloat("brickRotation", brickRotation);
+                        shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
+                    }
                 }
             }
 

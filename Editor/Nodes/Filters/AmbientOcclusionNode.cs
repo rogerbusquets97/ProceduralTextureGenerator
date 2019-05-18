@@ -64,16 +64,13 @@ namespace PTG
         public override void DrawInspector()
         {
             GUILayout.Space(10);
-            GUILayout.BeginVertical("Box");
- 
-            GUILayout.EndVertical();
+            EditorGUILayout.HelpBox("Warning: This node performs large computations on the GPU.", MessageType.Warning);
 
             base.DrawInspector();
         }
 
         public override void Compute(bool selfcompute = false)
         {
-            Debug.Log("Compute");
             NodeBase n = null;
             if (inPoint.connections.Count != 0)
             {
@@ -85,6 +82,10 @@ namespace PTG
                 if (n.GetTexture() != null)
                 {
                     source = n.GetTexture();
+                    if(n.ressolution!=this.ressolution)
+                    {
+                        ChangeRessolution(n.ressolution.x);
+                    }
                 }
             }
             if (selfcompute)
@@ -93,11 +94,14 @@ namespace PTG
                 {
                     if (shader != null)
                     {
-                        shader.SetTexture(kernel, "Result", texture);
-                        shader.SetTexture(kernel, "source", source);
-                        shader.SetFloat("ressolution", ressolution.x);
-                        shader.SetFloat("Samples", 16f);
-                        shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
+                        if (ressolution.x / 8 > 0)
+                        {
+                            shader.SetTexture(kernel, "Result", texture);
+                            shader.SetTexture(kernel, "source", source);
+                            shader.SetFloat("ressolution", ressolution.x);
+                            shader.SetFloat("Samples", 16f);
+                            shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
+                        }
                     }
                 }
             }

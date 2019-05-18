@@ -81,6 +81,7 @@ namespace PTG
         {
             GUILayout.Space(10);
             GUILayout.BeginVertical("Box");
+            EditorGUILayout.HelpBox("All inputs MUST have the same ressolution", MessageType.Info);
             GUILayout.Label("Strength");
             strength = EditorGUILayout.Slider(strength,0f,1f);
             GUILayout.EndVertical();
@@ -108,14 +109,24 @@ namespace PTG
                     source = s.GetTexture();
                     warper = w.GetTexture();
 
-                    if (shader != null)
+                    if (s.ressolution == w.ressolution)
                     {
-                        shader.SetTexture(kernel, "Result", texture);
-                        shader.SetTexture(kernel, "source", source);
-                        shader.SetTexture(kernel, "warper", warper);
-                        shader.SetFloat("ressolution", (float)ressolution.x);
-                        shader.SetFloat("strength", strength);
-                        shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
+                        if(s.ressolution!=ressolution)
+                        {
+                            ChangeRessolution(s.ressolution.x);
+                        }
+                        if (ressolution.x / 8 > 0)
+                        {
+                            if (shader != null)
+                            {
+                                shader.SetTexture(kernel, "Result", texture);
+                                shader.SetTexture(kernel, "source", source);
+                                shader.SetTexture(kernel, "warper", warper);
+                                shader.SetFloat("ressolution", (float)ressolution.x);
+                                shader.SetFloat("strength", strength);
+                                shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
+                            }
+                        }
                     }
                 }
             }

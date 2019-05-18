@@ -115,6 +115,10 @@ namespace PTG
                 if (n.GetTexture() != null)
                 {
                     source = n.GetTexture();
+                    if(n.ressolution != this.ressolution)
+                    {
+                        ChangeRessolution(n.ressolution.x);
+                    }
                 }
             }
             if (selfcompute)
@@ -123,11 +127,14 @@ namespace PTG
                 {
                     if (shader != null)
                     {
-                        shader.SetTexture(kernel, "Result", texture);
-                        shader.SetTexture(kernel, "source", source);
-                        shader.SetFloats("inLevels", data.inputLevels.x, data.inputLevels.y);
-                        shader.SetFloats("outLevels", data.outputLevels.x, data.outputLevels.y);
-                        shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
+                        if (ressolution.x / 8 > 0)
+                        {
+                            shader.SetTexture(kernel, "Result", texture);
+                            shader.SetTexture(kernel, "source", source);
+                            shader.SetFloats("inLevels", data.inputLevels.x, data.inputLevels.y);
+                            shader.SetFloats("outLevels", data.outputLevels.x, data.outputLevels.y);
+                            shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
+                        }
                     }
                 }
             }

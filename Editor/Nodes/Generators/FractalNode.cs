@@ -152,16 +152,19 @@ namespace PTG
             {
                 if (shader != null)
                 {
-                    shader.SetTexture(kernel, "Result", texture);
-                    shader.SetFloat("ressolution", (float)ressolution.x);
-                    shader.SetInt("scale_x", scale_x);
-                    shader.SetInt("scale_y", scale_y);
-                    shader.SetInt("start_band", start_band);
-                    shader.SetInt("end_band", end_band);
-                    shader.SetFloat("scale_value", scale_value);
-                    shader.SetFloat("persistance", persistance);
-                    shader.SetInt("type", (int)type);
-                    shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
+                    if (ressolution.x / 8 > 0)
+                    {
+                        shader.SetTexture(kernel, "Result", texture);
+                        shader.SetFloat("ressolution", (float)ressolution.x);
+                        shader.SetInt("scale_x", scale_x);
+                        shader.SetInt("scale_y", scale_y);
+                        shader.SetInt("start_band", start_band);
+                        shader.SetInt("end_band", end_band);
+                        shader.SetFloat("scale_value", scale_value);
+                        shader.SetFloat("persistance", persistance);
+                        shader.SetInt("type", (int)type);
+                        shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
+                    }
                 }
             }
 

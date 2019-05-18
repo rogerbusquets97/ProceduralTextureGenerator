@@ -38,3 +38,4 @@ void ColorMix(uint3 id : SV_DispatchThreadID)
 	float3 color = lerp(Color1, Color2, source[id.xy]);
 	Result[id.xy] = float4(color, 1.);
 }
+

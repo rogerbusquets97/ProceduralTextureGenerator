@@ -231,7 +231,6 @@ namespace PTG
             genericMenu.AddItem(new GUIContent("Generators/Flat Color"), false, () => OnClickAddNode(mousePosition, NodeType.Color));
             genericMenu.AddItem(new GUIContent("Filters/Mix"), false, () => OnClickAddNode(mousePosition, NodeType.Mix));
             genericMenu.AddItem(new GUIContent("Operators/Mask Map"), false, () => OnClickAddNode(mousePosition, NodeType.MaskMap));
-            genericMenu.AddItem(new GUIContent("Generators/Checker Texture"), false, () => OnClickAddNode(mousePosition, NodeType.Checker));
             genericMenu.AddItem(new GUIContent("Generators/Tile Generator"), false, () => OnClickAddNode(mousePosition, NodeType.Generator));
             genericMenu.AddItem(new GUIContent("Filters/Warp"), false, () => OnClickAddNode(mousePosition, NodeType.Warp));
             genericMenu.AddItem(new GUIContent("Filters/Blur"), false, () => OnClickAddNode(mousePosition, NodeType.Blur));
@@ -298,12 +297,6 @@ namespace PTG
                     nodes.Add(map);
                     Selection.activeObject = map;
                     break;
-                case NodeType.Checker:
-                    CheckerNode checker = CheckerNode.CreateInstance<CheckerNode>();
-                    checker.Init(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
-                    nodes.Add(checker);
-                    Selection.activeObject = checker;
-                    break;
                 case NodeType.Generator:
                     TileGenerator generator = TileGenerator.CreateInstance<TileGenerator>();
                     generator.Init(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
@@ -368,6 +361,7 @@ namespace PTG
 
                 for(int i = 0; i<connectionToRemove.Count; ++i)
                 {
+                    connectionToRemove[i].inPoint.connections[0].outPoint.connections.Remove(connectionToRemove[i]);
                     connections.Remove(connectionToRemove[i]);
                 }
 

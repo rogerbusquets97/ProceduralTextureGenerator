@@ -209,13 +209,16 @@ namespace PTG
            {
                 if(shader!= null)
                 {
-                    shader.SetTexture(kernel, "Result", texture);
-                    shader.SetFloat("ressolution", (float)ressolution.x);
-                    shader.SetInt("octaves", octaves);
-                    shader.SetFloat("frequency", frequency);
-                    shader.SetFloat("YScale", YScale);
-                    shader.SetFloat("XScale", XScale);
-                    shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
+                    if (ressolution.x / 8 > 0)
+                    {
+                        shader.SetTexture(kernel, "Result", texture);
+                        shader.SetFloat("ressolution", (float)ressolution.x);
+                        shader.SetInt("octaves", octaves);
+                        shader.SetFloat("frequency", frequency);
+                        shader.SetFloat("YScale", YScale);
+                        shader.SetFloat("XScale", XScale);
+                        shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
+                    }
                 }
            }
 

@@ -78,9 +78,12 @@ namespace PTG
             {
                 if (color != null)
                 {
-                    shader.SetTexture(kernel, "Result", texture);
-                    shader.SetFloats("MainColor", color.r, color.g, color.b, color.a);
-                    shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
+                    if (ressolution.x / 8 > 0)
+                    {
+                        shader.SetTexture(kernel, "Result", texture);
+                        shader.SetFloats("MainColor", color.r, color.g, color.b, color.a);
+                        shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
+                    }
                 }
             }
 

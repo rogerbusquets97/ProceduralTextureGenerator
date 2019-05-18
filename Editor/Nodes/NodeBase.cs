@@ -12,6 +12,7 @@ namespace PTG
     public class NodeBase : ScriptableObject
     {
         public Vector2Int ressolution;
+        public Vector2Int lastRessolution;
         public Rect rect;
         public string title;
         public bool isDragged;
@@ -33,7 +34,18 @@ namespace PTG
         public void InitTexture()
         {
             ressolution = new Vector2Int(1024, 1024);
+            lastRessolution = ressolution;
             texture = new RenderTexture(ressolution.x, ressolution.y, 24);
+        }
+
+        public void ChangeRessolution(int res, bool selfCompute = false)
+        {
+            DestroyImmediate(texture);
+            ressolution = new Vector2Int(res, res);
+            texture = new RenderTexture(ressolution.x, ressolution.y, 24);
+            texture.enableRandomWrite = true;
+            texture.Create();
+            Compute(selfCompute);
         }
         public RenderTexture GetTexture()
         {
@@ -46,7 +58,7 @@ namespace PTG
 
         virtual public void Compute(bool selfcompute = false)
         {
-
+            
         }
         public virtual void Draw()
         {
@@ -56,9 +68,15 @@ namespace PTG
         public virtual void DrawInspector()
         {
             GUILayout.Space(10);
+            ressolution = EditorGUILayout.Vector2IntField("Ressolution", ressolution);
+            if(lastRessolution!=ressolution)
+            {
+                lastRessolution = ressolution;
+                ChangeRessolution(ressolution.x, true);
+            }
             GUILayout.BeginVertical("Box");
             EditorGUILayout.LabelField("Preview Texture");
-            GUI.DrawTexture(new Rect(GUILayoutUtility.GetLastRect().x, GUILayoutUtility.GetRect(256, 256).y, 256, 256), texture);
+            GUI.DrawTexture(new Rect(GUILayoutUtility.GetLastRect().x, GUILayoutUtility.GetRect(256, 256).y, 256, 256), texture, ScaleMode.ScaleToFit, false);
             GUILayout.EndVertical();
 
             GUILayout.BeginVertical("Box");
