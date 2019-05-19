@@ -29,6 +29,9 @@ namespace PTG
         public ComputeShader shader;
         public int kernel;
 
+        public float minZoom = 50;
+        public float maxZoom = 200;
+
         virtual public object GetValue(int x, int y) { return 0; }
        
         public void InitTexture()
@@ -56,6 +59,25 @@ namespace PTG
             rect.position += delta;
         }
 
+        public void Zoom(Vector2 delta)
+        {
+            rect.width -= delta.y;
+            rect.height -= delta.y;
+
+            if(rect.width > maxZoom)
+            {
+                rect.width = maxZoom;
+                rect.height = maxZoom;
+            }
+
+            if(rect.width<minZoom)
+            {
+                rect.width = minZoom;
+                rect.height = minZoom;
+            }
+
+            editor.currSize = rect.width;
+        }
         virtual public void Compute(bool selfcompute = false)
         {
             
@@ -107,14 +129,14 @@ namespace PTG
             {
                 for (int i = 0; i < inPoints.Count; i++)
                 {
-                    inPoints[i].Draw(i + 1);
+                    inPoints[i].Draw(i + 1, inPoints.Count);
                 }
             }
             if (outPoints != null)
             {
                 for (int i = 0; i < outPoints.Count; i++)
                 {
-                    outPoints[i].Draw(i + 1);
+                    outPoints[i].Draw(i + 1, outPoints.Count);
                 }
             }
 

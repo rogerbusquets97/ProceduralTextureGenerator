@@ -102,7 +102,7 @@ namespace PTG
             GUILayout.BeginArea(rect);
             if (texture != null)
             {
-                GUI.DrawTexture(new Rect((rect.width / 4) - 15, (rect.height / 4) - 8, rect.width - 20, rect.height - 20), texture);
+                GUI.DrawTexture(new Rect(0 + rect.width / 8, 0 + rect.height / 5, rect.width - rect.width / 4, rect.height - rect.height / 4), texture);
             }
             GUILayout.EndArea();
 
@@ -155,94 +155,97 @@ namespace PTG
             {
                 if (A != null && B != null && texture!= null)
                 {
-                    if (n.ressolution == n2.ressolution)
+                    if (n != null && n2 != null)
                     {
-                        if(n.ressolution != ressolution)
+                        if (n.ressolution == n2.ressolution)
                         {
-                            ChangeRessolution(n.ressolution.x);
-                        }
-
-                        if (ressolution.x / 8 > 0)
-                        {
-                            switch (mode)
+                            if (n.ressolution != ressolution)
                             {
-                                case Filter.BlendMode.Multiply:
-                                    if (shader != null)
-                                    {
-                                        kernel = shader.FindKernel("BlendMultiply");
+                                ChangeRessolution(n.ressolution.x);
+                            }
+
+                            if (ressolution.x / 8 > 0)
+                            {
+                                switch (mode)
+                                {
+                                    case Filter.BlendMode.Multiply:
+                                        if (shader != null)
+                                        {
+                                            kernel = shader.FindKernel("BlendMultiply");
+                                            shader.SetTexture(kernel, "Result", texture);
+                                            shader.SetTexture(kernel, "A", A);
+                                            shader.SetTexture(kernel, "B", B);
+                                            shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
+                                        }
+                                        break;
+                                    case Filter.BlendMode.Addition:
+                                        kernel = shader.FindKernel("BlendAddition");
                                         shader.SetTexture(kernel, "Result", texture);
                                         shader.SetTexture(kernel, "A", A);
                                         shader.SetTexture(kernel, "B", B);
                                         shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
-                                    }
-                                    break;
-                                case Filter.BlendMode.Addition:
-                                    kernel = shader.FindKernel("BlendAddition");
-                                    shader.SetTexture(kernel, "Result", texture);
-                                    shader.SetTexture(kernel, "A", A);
-                                    shader.SetTexture(kernel, "B", B);
-                                    shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
-                                    break;
-                                case Filter.BlendMode.Substraction:
-                                    kernel = shader.FindKernel("BlendSubstraction");
-                                    shader.SetTexture(kernel, "Result", texture);
-                                    shader.SetTexture(kernel, "A", A);
-                                    shader.SetTexture(kernel, "B", B);
-                                    shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
-                                    break;
-                                case Filter.BlendMode.Mask:
-                                    if (Mask != null)
-                                    {
-                                        kernel = shader.FindKernel("BlendMask");
+                                        break;
+                                    case Filter.BlendMode.Substraction:
+                                        kernel = shader.FindKernel("BlendSubstraction");
                                         shader.SetTexture(kernel, "Result", texture);
                                         shader.SetTexture(kernel, "A", A);
                                         shader.SetTexture(kernel, "B", B);
-                                        shader.SetTexture(kernel, "Mask", Mask);
                                         shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
-                                    }
-                                    break;
-                                case Filter.BlendMode.Screen:
-                                    kernel = shader.FindKernel("BlendScreen");
-                                    shader.SetTexture(kernel, "Result", texture);
-                                    shader.SetTexture(kernel, "A", A);
-                                    shader.SetTexture(kernel, "B", B);
-                                    shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
-                                    break;
-                                case Filter.BlendMode.Overlay:
-                                    kernel = shader.FindKernel("BlendOverlay");
-                                    shader.SetTexture(kernel, "Result", texture);
-                                    shader.SetTexture(kernel, "A", A);
-                                    shader.SetTexture(kernel, "B", B);
-                                    shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
-                                    break;
-                                case Filter.BlendMode.Max:
-                                    kernel = shader.FindKernel("BlendMax");
-                                    shader.SetTexture(kernel, "Result", texture);
-                                    shader.SetTexture(kernel, "A", A);
-                                    shader.SetTexture(kernel, "B", B);
-                                    shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
-                                    break;
-                                case Filter.BlendMode.Min:
-                                    kernel = shader.FindKernel("BlendMin");
-                                    shader.SetTexture(kernel, "Result", texture);
-                                    shader.SetTexture(kernel, "A", A);
-                                    shader.SetTexture(kernel, "B", B);
-                                    shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
-                                    break;
-                                case Filter.BlendMode.Divide:
-                                    kernel = shader.FindKernel("BlendDivide");
-                                    shader.SetTexture(kernel, "Result", texture);
-                                    shader.SetTexture(kernel, "A", A);
-                                    shader.SetTexture(kernel, "B", B);
-                                    shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
-                                    break;
-                                case Filter.BlendMode.AddSub:
-                                    kernel = shader.FindKernel("BlendAddSub");
-                                    shader.SetTexture(kernel, "Result", texture);
-                                    shader.SetTexture(kernel, "A", A);
-                                    shader.SetTexture(kernel, "B", B);
-                                    shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
-                                    break;
+                                        break;
+                                    case Filter.BlendMode.Mask:
+                                        if (Mask != null)
+                                        {
+                                            kernel = shader.FindKernel("BlendMask");
+                                            shader.SetTexture(kernel, "Result", texture);
+                                            shader.SetTexture(kernel, "A", A);
+                                            shader.SetTexture(kernel, "B", B);
+                                            shader.SetTexture(kernel, "Mask", Mask);
+                                            shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
+                                        }
+                                        break;
+                                    case Filter.BlendMode.Screen:
+                                        kernel = shader.FindKernel("BlendScreen");
+                                        shader.SetTexture(kernel, "Result", texture);
+                                        shader.SetTexture(kernel, "A", A);
+                                        shader.SetTexture(kernel, "B", B);
+                                        shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
+                                        break;
+                                    case Filter.BlendMode.Overlay:
+                                        kernel = shader.FindKernel("BlendOverlay");
+                                        shader.SetTexture(kernel, "Result", texture);
+                                        shader.SetTexture(kernel, "A", A);
+                                        shader.SetTexture(kernel, "B", B);
+                                        shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
+                                        break;
+                                    case Filter.BlendMode.Max:
+                                        kernel = shader.FindKernel("BlendMax");
+                                        shader.SetTexture(kernel, "Result", texture);
+                                        shader.SetTexture(kernel, "A", A);
+                                        shader.SetTexture(kernel, "B", B);
+                                        shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
+                                        break;
+                                    case Filter.BlendMode.Min:
+                                        kernel = shader.FindKernel("BlendMin");
+                                        shader.SetTexture(kernel, "Result", texture);
+                                        shader.SetTexture(kernel, "A", A);
+                                        shader.SetTexture(kernel, "B", B);
+                                        shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
+                                        break;
+                                    case Filter.BlendMode.Divide:
+                                        kernel = shader.FindKernel("BlendDivide");
+                                        shader.SetTexture(kernel, "Result", texture);
+                                        shader.SetTexture(kernel, "A", A);
+                                        shader.SetTexture(kernel, "B", B);
+                                        shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
+                                        break;
+                                    case Filter.BlendMode.AddSub:
+                                        kernel = shader.FindKernel("BlendAddSub");
+                                        shader.SetTexture(kernel, "Result", texture);
+                                        shader.SetTexture(kernel, "A", A);
+                                        shader.SetTexture(kernel, "B", B);
+                                        shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
+                                        break;
+                                }
                             }
                         }
                     }

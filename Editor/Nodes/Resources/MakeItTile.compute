@@ -47,12 +47,14 @@ void Tile (uint3 id : SV_DispatchThreadID)
 	st.y += step(0., fmod(st.x, 2.)) * offsetY;
 
 	st = rotate2D(st, PI * globalangle);
-	float gray = random(round(st + float2(0.5,0.5)));
+	//float gray = random(round(st + float2(0.5,0.5))); // Aqui funcionaria bien.
 
-	st = rotate2D(frac(st), PI * angle);
-	st = mul(scale2D(float2(scale, scale)), frac(st));
+	//st = rotate2D(frac(st), PI * angle);
+	//st = mul(scale2D(float2(scale, scale)), frac(st));
 
+	// Aqui se rompe al modificar el espacio al rotar y escalar individualmente.
+	float gray = random(round(st + float2(0.5, 0.5)));
 
-	float4 color = source[(frac(st))*ressolution]*gray;
+	float4 color = source[(frac(st))*ressolution];
 	Result[id.xy] = color;
 }

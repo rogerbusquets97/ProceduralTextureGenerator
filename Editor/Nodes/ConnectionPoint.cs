@@ -29,11 +29,13 @@ namespace PTG
             connections = new List<NodeConnection>();
         }
 
-        public void Draw(int id)
+        public void Draw(int id, int num)
         {
             if(enabled)
             {
-                rect.y = node.rect.y + (25 * id);
+                rect.y = node.rect.y + ((rect.height) * id);
+                rect.width = node.rect.width / 10;
+                rect.height = node.rect.height / 5;
 
                 switch (type)
                 {

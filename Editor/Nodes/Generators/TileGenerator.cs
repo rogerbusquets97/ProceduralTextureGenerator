@@ -101,7 +101,7 @@ namespace PTG
             //Texture
             if (texture != null)
             {
-                GUI.DrawTexture(new Rect((rect.width / 4) - 15, (rect.height / 4) - 8, rect.width - 20, rect.height - 20), texture);
+                GUI.DrawTexture(new Rect(0 + rect.width / 8, 0 + rect.height / 5, rect.width - rect.width / 4, rect.height - rect.height / 4), texture);
             }
 
             if(lastSize != size || lastBrickWidth !=  brickWidth || lastbBrickHeight != brickHeight || lastOffset!= brickOffset || lastBrickGradient!= brickGradient

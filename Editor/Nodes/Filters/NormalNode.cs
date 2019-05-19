@@ -80,7 +80,7 @@ namespace PTG
             GUILayout.BeginArea(rect);
             if (texture != null)
             {
-                GUI.DrawTexture(new Rect((rect.width / 4) - 15, (rect.height / 4) - 8, rect.width - 20, rect.height - 20), texture, ScaleMode.ScaleToFit,false);
+                GUI.DrawTexture(new Rect(0 + rect.width / 8, 0 + rect.height / 5, rect.width - rect.width / 4, rect.height - rect.height / 4), texture);
             }
             GUILayout.EndArea();
 
@@ -125,13 +125,20 @@ namespace PTG
             {
                 if (source != null && texture != null)
                 {
-                    if (shader != null)
+                    if(n.ressolution != ressolution)
                     {
-                        shader.SetTexture(kernel, "Result", texture);
-                        shader.SetTexture(kernel, "source", source);
-                        shader.SetFloat("strength", strength);
-                        shader.SetFloat("ressolution", (float)ressolution.x);
-                        shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
+                        ChangeRessolution(n.ressolution.x);
+                    }
+                    if (ressolution.x / 8 > 0)
+                    {
+                        if (shader != null)
+                        {
+                            shader.SetTexture(kernel, "Result", texture);
+                            shader.SetTexture(kernel, "source", source);
+                            shader.SetFloat("strength", strength);
+                            shader.SetFloat("ressolution", (float)ressolution.x);
+                            shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
+                        }
                     }
                 }
             }

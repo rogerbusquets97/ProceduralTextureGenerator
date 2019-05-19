@@ -23,6 +23,7 @@ namespace PTG
         private GUIStyle inPointStyle;
         private GUIStyle outPointStyle;
 
+        public float currSize = 100f;
         //x
 
         [MenuItem("Tools/Procedural Texture Generator")]
@@ -203,9 +204,21 @@ namespace PTG
                         OnDrag(e.delta);
                     }
                     break;
+                case EventType.ScrollWheel:
+                    OnScroll(e.delta);
+                    break;
             }
         }
-
+        private void OnScroll(Vector2 delta)
+        {
+            if(nodes!=null)
+            {
+                for(int i = 0; i< nodes.Count; ++i)
+                {
+                    nodes[i].Zoom(delta);
+                }
+            }
+        }
         private void OnDrag(Vector2 delta)
         {
             drag = delta;
@@ -247,85 +260,85 @@ namespace PTG
             {
                 case NodeType.Fractal:
                     FractalNode fractal = FractalNode.CreateInstance<FractalNode>();
-                    fractal.Init(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
+                    fractal.Init(mousePosition, currSize, currSize, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
                     nodes.Add(fractal);
                     Selection.activeObject = fractal;
                     break;
                 case NodeType.Cellular:
                     CellularNode cellular  = CellularNode.CreateInstance<CellularNode>();
-                    cellular.Init(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
+                    cellular.Init(mousePosition, currSize, currSize, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
                     nodes.Add(cellular);
                     Selection.activeObject = cellular;
                     break;
                 case NodeType.Blend:
                     BlendNode blend = BlendNode.CreateInstance<BlendNode>();
-                    blend.Init(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
+                    blend.Init(mousePosition, currSize, currSize, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
                     nodes.Add(blend);
                     Selection.activeObject = blend;
                     break;
                 case NodeType.Levels:
                     LevelsNode levels = LevelsNode.CreateInstance<LevelsNode>();
-                    levels.Init(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
+                    levels.Init(mousePosition, currSize, currSize, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
                     nodes.Add(levels);
                     Selection.activeObject = levels;
                     break;
                 case NodeType.Normal:
                     NormalNode normal = NormalNode.CreateInstance<NormalNode>();
-                    normal.Init(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
+                    normal.Init(mousePosition, currSize, currSize, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
                     nodes.Add(normal);
                     Selection.activeObject = normal;
                     break;
                 case NodeType.OneMinus:
                     MinusOneNode n = MinusOneNode.CreateInstance<MinusOneNode>();
-                    n.Init(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
+                    n.Init(mousePosition, currSize, currSize, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
                     nodes.Add(n);
                     Selection.activeObject = n;
                     break;
                 case NodeType.Color:
                     FlatColor color = FlatColor.CreateInstance<FlatColor>();
-                    color.Init(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
+                    color.Init(mousePosition, currSize, currSize, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
                     nodes.Add(color);
                     Selection.activeObject = color;
                     break;
                 case NodeType.Mix:
                     MixNode mix = MixNode.CreateInstance<MixNode>();
-                    mix.Init(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
+                    mix.Init(mousePosition, currSize, currSize, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
                     nodes.Add(mix);
                     Selection.activeObject = mix;
                     break;
                 case NodeType.MaskMap:
                     MakeMaskMap map = MakeMaskMap.CreateInstance<MakeMaskMap>();
-                    map.Init(mousePosition, 100, 130, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
+                    map.Init(mousePosition, currSize, currSize + currSize/2, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
                     nodes.Add(map);
                     Selection.activeObject = map;
                     break;
                 case NodeType.Generator:
                     TileGenerator generator = TileGenerator.CreateInstance<TileGenerator>();
-                    generator.Init(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
+                    generator.Init(mousePosition, currSize, currSize, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
                     nodes.Add(generator);
                     Selection.activeObject = generator;
                     break;
                 case NodeType.Warp:
                     WarpNode warp = WarpNode.CreateInstance<WarpNode>();
-                    warp.Init(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
+                    warp.Init(mousePosition, currSize, currSize, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
                     nodes.Add(warp);
                     Selection.activeObject = warp;
                     break;
                 case NodeType.Blur:
                     BlurNode blur = BlurNode.CreateInstance<BlurNode>();
-                    blur.Init(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
+                    blur.Init(mousePosition, currSize, currSize, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
                     nodes.Add(blur);
                     Selection.activeObject = blur;
                     break;
                 case NodeType.Occlusion:
                     AmbientOcclusionNode occlusion = AmbientOcclusionNode.CreateInstance<AmbientOcclusionNode>();
-                    occlusion.Init(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
+                    occlusion.Init(mousePosition, currSize, currSize, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
                     nodes.Add(occlusion);
                     Selection.activeObject = occlusion;
                     break;
                 case NodeType.Tile:
                     MakeItTile tile = MakeItTile.CreateInstance<MakeItTile>();
-                    tile.Init(mousePosition, 100, 100, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
+                    tile.Init(mousePosition, currSize, currSize, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
                     nodes.Add(tile);
                     Selection.activeObject = tile;
                     break;

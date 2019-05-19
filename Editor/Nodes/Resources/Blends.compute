@@ -106,6 +106,7 @@ void BlendAddSub(uint3 id : SV_DispatchThreadID)
 		color = B[id.xy] - A[id.xy];
 	}
 
+	color.a = 1.;
 	Result[id.xy] = color;
 }
 
