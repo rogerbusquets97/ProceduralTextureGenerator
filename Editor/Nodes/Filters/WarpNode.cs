@@ -18,11 +18,16 @@ namespace PTG
         float strength;
         float lastStrength;
 
+        float angle;
+        float lastAngle;
+
         public WarpNode()
         {
             title = "Warp";
             strength = 0.01f;
             lastStrength = strength;
+            angle = 0f;
+            lastAngle = angle;
         }
 
         public void OnEnable()
@@ -70,9 +75,10 @@ namespace PTG
             }
             GUILayout.EndArea();
 
-            if (lastStrength!= strength)
+            if (lastStrength!= strength || lastAngle!= angle)
             {
                 lastStrength = strength;
+                lastAngle = angle;
                 Compute(true);
             }
         }
@@ -84,6 +90,8 @@ namespace PTG
             EditorGUILayout.HelpBox("All inputs MUST have the same ressolution", MessageType.Info);
             GUILayout.Label("Strength");
             strength = EditorGUILayout.Slider(strength,0f,1f);
+            GUILayout.Label("Rotation");
+            angle = EditorGUILayout.Slider(angle, 0f, 2f);
             GUILayout.EndVertical();
 
             base.DrawInspector();
@@ -124,6 +132,7 @@ namespace PTG
                                 shader.SetTexture(kernel, "warper", warper);
                                 shader.SetFloat("ressolution", (float)ressolution.x);
                                 shader.SetFloat("strength", strength);
+                                shader.SetFloat("angle", angle);
                                 shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
                             }
                         }

@@ -14,13 +14,14 @@ int start_band;
 int end_band;
 float persistance;
 int type;
+float seed;
 
 [numthreads(8, 8, 1)]
 void Liquid(uint3 id : SV_DispatchThreadID)
 {
 	float2 st = float2(id.x / ressolution, id.y / ressolution);
 	
-	float v = fbm(st,scale_x, scale_y, scale_value, start_band, end_band, persistance, type);
+	float v = fbm(st,scale_x, scale_y,seed, scale_value, start_band, end_band, persistance, type);
 
 	float3 color = float3(v, v, v);
 	Result[id.xy] = float4(color, 1.);

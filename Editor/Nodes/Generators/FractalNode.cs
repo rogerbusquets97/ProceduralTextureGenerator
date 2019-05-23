@@ -20,6 +20,7 @@ namespace PTG
         public int     start_band;
         public int     end_band;
         public float   persistance;
+        public float   seed;
 
         int     last_scale_x;
         int     last_scale_y;
@@ -27,6 +28,7 @@ namespace PTG
         int     last_start_band;
         int     last_end_band;
         float   last_persistance;
+        float   last_seed;
 
 
         public FractalNode()
@@ -41,6 +43,7 @@ namespace PTG
             start_band = 1;
             end_band = 8;
             persistance = 0.5f;
+            seed = 100f;
 
             last_scale_x = scale_x;
             last_scale_y = scale_y;
@@ -48,6 +51,7 @@ namespace PTG
             last_start_band = start_band;
             last_end_band = end_band;
             last_persistance = persistance;
+            last_seed = seed;
         }
 
         private void OnEnable()
@@ -92,7 +96,7 @@ namespace PTG
             GUILayout.EndArea();
 
            
-            if(last_end_band != end_band || last_scale_value!= scale_value || last_scale_x != scale_x || last_scale_y!= scale_y || last_start_band!= start_band || last_persistance!= persistance || lastType!= type)
+            if(last_end_band != end_band || last_scale_value!= scale_value || last_scale_x != scale_x || last_scale_y!= scale_y || last_start_band!= start_band || last_persistance!= persistance || lastType!= type || last_seed!=seed)
             {
                 last_scale_x = scale_x;
                 last_scale_y = scale_y;
@@ -101,6 +105,7 @@ namespace PTG
                 last_end_band = end_band;
                 last_persistance = persistance;
                 lastType = type;
+                last_seed = seed;
                 Compute(true);
             }
         }
@@ -143,11 +148,20 @@ namespace PTG
             type = (FractalType)EditorGUILayout.EnumPopup(type);
             GUILayout.EndVertical();
 
+            GUILayout.BeginHorizontal("Box");
+            seed = EditorGUILayout.FloatField(seed);
+            if(GUILayout.Button("Random"))
+            {
+                seed = UnityEngine.Random.Range(0f, 1000000000f);
+            }
+            GUILayout.EndHorizontal();
+
             base.DrawInspector();
         }
       
         public override void Compute(bool selfcompute = false)
         {
+            Debug.Log("Compute");
             if(selfcompute)
             {
                 if (shader != null)
@@ -163,6 +177,7 @@ namespace PTG
                         shader.SetFloat("scale_value", scale_value);
                         shader.SetFloat("persistance", persistance);
                         shader.SetInt("type", (int)type);
+                        shader.SetFloat("seed", seed);
                         shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
                     }
                 }

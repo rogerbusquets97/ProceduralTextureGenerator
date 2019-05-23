@@ -196,7 +196,7 @@ float pnoise(float3 P, float3 rep)
 	return 2.2 * n_xyz;
 }
 
-float fbm(float2 st, int scale_x, int scale_y, float scale_value, int start_band, int end_band, float persistance, int type)
+float fbm(float2 st, int scale_x, int scale_y, float seed, float scale_value, int start_band, int end_band, float persistance, int type)
 {
 	float accum = 0.0;
 	float sx = scale_x;
@@ -205,10 +205,11 @@ float fbm(float2 st, int scale_x, int scale_y, float scale_value, int start_band
 	for (int i = 1; i <= 16; i += 1) {
 		if (i >= start_band && i <= end_band) {
 			if (type == 0)
-				accum += (pnoise(float2(st.x * sx, st.y * sy), float2(sx, sy))*0.5 + 0.5) * sv;
+				accum += (pnoise(float3(st.x * sx, st.y * sy, seed), float3(sx, sy, 1000.)) * 0.5 + 0.5) * sv;
 			else
-				accum += abs(pnoise(float2(st.x * sx, st.y * sy), float2(sx, sy))) * sv;
+				accum += abs(pnoise(float3(st.x * sx, st.y * sy, seed), float3(sx, sy, 1000.))) * sv;
 			sv *= persistance;
+			seed += 1.;
 		}
 		sx *= 2.0;
 		sy *= 2.0;
@@ -219,3 +220,4 @@ float fbm(float2 st, int scale_x, int scale_y, float scale_value, int start_band
 
 	return accum;
 }
+

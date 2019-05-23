@@ -160,7 +160,7 @@ MonoBehaviour:
       reflectionCubemapSize: 256
       reflectionCacheCompressed: 0
       planarReflectionCacheCompressed: 0
-      skyReflectionSize: 256
+      skyReflectionSize: 2048
       skyLightingOverrideLayerMask:
         serializedVersion: 2
         m_Bits: 0
@@ -184,4 +184,5 @@ MonoBehaviour:
       perChannelMask: 0
   allowShaderVariantStripping: 1
   enableSRPBatcher: 0
-  diffusionProfileSettings: {fileID: 0}
+  diffusionProfileSettings: {fileID: 11400000, guid: bce053e6c039f074a882ec8800a489c4,
+    type: 2}

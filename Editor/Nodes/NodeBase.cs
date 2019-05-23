@@ -36,9 +36,9 @@ namespace PTG
        
         public void InitTexture()
         {
-            ressolution = new Vector2Int(1024, 1024);
+            ressolution = new Vector2Int(2048, 2048);
             lastRessolution = ressolution;
-            texture = new RenderTexture(ressolution.x, ressolution.y, 24);
+            texture = new RenderTexture(ressolution.x, ressolution.y, 32);
         }
 
         public void ChangeRessolution(int res, bool selfCompute = false)

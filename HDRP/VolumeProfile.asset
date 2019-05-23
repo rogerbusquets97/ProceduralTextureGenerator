@@ -17,6 +17,7 @@ MonoBehaviour:
   - {fileID: 114443294997320540}
   - {fileID: 114547351074938724}
   - {fileID: 114202984897914150}
+  - {fileID: 114367993508899960}
 --- !u!114 &114202984897914150
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -87,6 +88,58 @@ MonoBehaviour:
     m_Value: 0
   fogHeightAttenuation:
     m_OverrideState: 0
+    m_Value: 0.2
+    min: 0
+    max: 1
+--- !u!114 &114367993508899960
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2150ee00179b2f4418ea8b21a7e98eea, type: 3}
+  m_Name: ExponentialFog
+  m_EditorClassIdentifier: 
+  active: 1
+  colorMode:
+    m_OverrideState: 0
+    m_Value: 1
+  color:
+    m_OverrideState: 0
+    m_Value: {r: 0.5, g: 0.5, b: 0.5, a: 1}
+    hdr: 1
+    showAlpha: 0
+    showEyeDropper: 1
+  density:
+    m_OverrideState: 1
+    m_Value: 0.04
+    min: 0
+    max: 1
+  mipFogMaxMip:
+    m_OverrideState: 0
+    m_Value: 0.5
+    min: 0
+    max: 1
+  mipFogNear:
+    m_OverrideState: 0
+    m_Value: 0
+    min: 0
+  mipFogFar:
+    m_OverrideState: 0
+    m_Value: 1000
+    min: 0
+  fogDistance:
+    m_OverrideState: 1
+    m_Value: 0
+    min: 0
+  fogBaseHeight:
+    m_OverrideState: 1
+    m_Value: 2000
+  fogHeightAttenuation:
+    m_OverrideState: 1
     m_Value: 0.2
     min: 0
     max: 1
@@ -177,7 +230,7 @@ MonoBehaviour:
   active: 1
   rotation:
     m_OverrideState: 1
-    m_Value: 147
+    m_Value: 79
     min: 0
     max: 360
   skyIntensityMode:
@@ -192,13 +245,13 @@ MonoBehaviour:
     min: 0
   upperHemisphereLuxValue:
     m_OverrideState: 0
-    m_Value: 1.907432
+    m_Value: 2.2009737
     min: 0
   desiredLuxValue:
     m_OverrideState: 0
     m_Value: 20000
   updateMode:
-    m_OverrideState: 0
+    m_OverrideState: 1
     m_Value: 0
   updatePeriod:
     m_OverrideState: 0
@@ -209,4 +262,4 @@ MonoBehaviour:
     m_Value: 0
   hdriSky:
     m_OverrideState: 1
-    m_Value: {fileID: 8900000, guid: 252bce6bbc07f4344b55b06f7ab6d996, type: 3}
+    m_Value: {fileID: 8900000, guid: f1d515f7cde2a2b44963ffb89b006869, type: 3}

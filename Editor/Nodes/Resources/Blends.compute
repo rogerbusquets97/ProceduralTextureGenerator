@@ -63,15 +63,33 @@ void BlendOverlay(uint3 id : SV_DispatchThreadID)
 {
 	float4 color = float4(0., 0., 0., 1.);
 	
-	if (B[id.xy].r < 0.5)
+	if (A[id.xy].r < 0.5)
 	{
-		color = Mult(A[id.xy], B[id.xy]);
+		color.r = 2.*( A[id.xy].r * B[id.xy].r);
 	}
 	else
 	{
-		color = Screen(A[id.xy], B[id.xy]);
+		color.r = 1. - 2.*((1. - A[id.xy].r)*(1. - B[id.xy].r));
 	}
 
+	if (A[id.xy].g < 0.5)
+	{
+		color.g = 2.*(A[id.xy].g * B[id.xy].g);
+	}
+	else
+	{
+		color.g = 1. - 2.*((1. - A[id.xy].g)*(1. - B[id.xy].g));
+	}
+
+	if (A[id.xy].b < 0.5)
+	{
+		color.b = 2.*(A[id.xy].b * B[id.xy].b);
+	}
+	else
+	{
+		color.b = 1. - 2.*((1. - A[id.xy].b)*(1. - B[id.xy].b));
+	}
+	color.a = 1.;
 	Result[id.xy] = color;
 }
 
