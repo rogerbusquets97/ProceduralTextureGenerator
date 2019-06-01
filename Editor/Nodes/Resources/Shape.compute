@@ -1,0 +1,77 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel Shape
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWTexture2D<float4> Result;
+float ressolution;
+int type;
+float radius;
+float circleGradient;
+float squareHeight;
+float squareWidth;
+float smoothEdges;
+float squareGradient;
+float squareGradientStrength;
+float squareGradientAngle;
+
+
+
+#define PI 3.14159265358979323846
+
+float2 rotate2D(float2 _st, float _angle) {
+	_st -= 0.5;
+	float2x2 rot = { cos(_angle), -sin(_angle),
+		sin(_angle), cos(_angle) };
+
+	_st = mul(rot, _st);
+	_st += 0.5;
+	return _st;
+}
+
+float box(float2 _st, float2 _size, float _smoothEdges) {
+	_size = float(0.5) - _size * 0.5;
+	float2 aa = float2(_smoothEdges*0.5, _smoothEdges*0.5);
+	float2 uv = smoothstep(_size, _size + aa, _st);
+	uv *= smoothstep(_size, _size + aa, float(1.0) - _st);
+
+	_st = rotate2D(_st, PI * squareGradientAngle);
+	return (uv.x * (1. - ((_st.x - squareGradient)*squareGradientStrength)))*uv.y;
+}
+
+float Pyramid(float2 uv)
+{
+	float2 q = float2(1., 1.) - abs(uv * 2.0 - 1.0);
+	return min(q.x, q.y);
+}
+
+float Circle(float2 uv)
+{
+	float2 q = uv - float2(0.5, 0.5);
+	return smoothstep(radius, radius + circleGradient, length(q));
+}
+[numthreads(8,8,1)]
+void Shape (uint3 id : SV_DispatchThreadID)
+{
+	float2 st = id.xy / ressolution;
+	float3 color = float3(1.0, 1.0, 1.0);
+	if (type == 0)
+	{
+		//Square
+		float c = box(st, float2(squareWidth, squareHeight), smoothEdges);
+		color = float3(c, c, c);
+	}
+	else if (type == 1)
+	{
+		//Circle
+		color = 1 - (color * Circle(st));
+	}
+	else if (type == 2)
+	{
+		//Pyramid
+		float c = Pyramid(st);
+		color = float3(c, c, c);
+	}
+
+    Result[id.xy] = float4(color,1.);
+}
