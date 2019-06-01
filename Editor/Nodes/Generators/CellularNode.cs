@@ -12,41 +12,36 @@ namespace PTG
         ConnectionPoint outPoint;
         CellularType type;
         CellularType lastType;
-        int octaves;
-        int lastOctaves;
-        float frequency;
-        float lastFrequency;
-
-        bool seamless;
-        bool lastSeamless;
 
         float XScale;
         float YScale;
         float lastXScale;
-        float lastYScale; 
+        float lastYScale;
+        float jitter;
+        float lastJitter;
+        float seed;
+        float lastSeed;
 
         public CellularNode()
         {
             title = "Cellular Node";
             type = CellularType.F1;
             lastType = type;
-            octaves = 1;
-            lastOctaves = octaves;
-            frequency = 0.01f;
-            lastFrequency = frequency;
-            seamless = false;
-            lastSeamless = seamless;
             XScale = 10;
             YScale = 10;
             lastXScale = XScale;
             lastYScale = YScale;
+            jitter = 1f;
+            lastJitter = jitter;
+            seed = 1000;
+            lastSeed = seed;
         }
 
         private void OnEnable()
         {
             InitTexture();
             shader = (ComputeShader)Resources.Load("Worley");
-            kernel = shader.FindKernel("F1DistanceVoronoi");
+            kernel = shader.FindKernel("F1DistanceSeamlessVoronoi");
             texture.enableRandomWrite = true;
             texture.Create();
         }
@@ -85,71 +80,35 @@ namespace PTG
 
             GUILayout.EndArea();
 
-            if (lastOctaves != octaves || lastFrequency != frequency || lastYScale!= YScale || lastXScale!= XScale)
+            if (lastYScale!= YScale || lastXScale!= XScale || lastJitter != jitter || lastSeed != seed)
             {
-                lastFrequency = frequency;
-                lastOctaves = octaves;
                 lastYScale = YScale;
                 lastXScale = XScale;
+                lastJitter = jitter;
+                lastSeed = seed;
                 Compute(true);
             }
 
-            if (lastType != type || lastSeamless!= seamless)
+            if (lastType != type)
             {
                 lastType = type;
-                lastSeamless = seamless;
 
                 switch (type)
                 {
                     case CellularType.F1:
-                        if (!seamless)
-                        {
-                            kernel = shader.FindKernel("F1DistanceVoronoi");
-                        }
-                        else
-                        {
-                            kernel = shader.FindKernel("F1DistanceSeamlessVoronoi");
-                        }
+                        kernel = shader.FindKernel("F1DistanceSeamlessVoronoi");
                         break;
                     case CellularType.F2:
-                        if(!seamless)
-                        {
-                            kernel = shader.FindKernel("F2DistanceVoronoi");
-                        }
-                        else
-                        {
-                            kernel = shader.FindKernel("F2DistanceSeamlessVoronoi");
-                        }
+                        kernel = shader.FindKernel("F2DistanceSeamlessVoronoi");
                         break;
                     case CellularType.DistanceSub:
-                        if (!seamless)
-                        {
-                            kernel = shader.FindKernel("FMinusDistanceVoronoi");
-                        }
-                        else
-                        {
-                            kernel = shader.FindKernel("FMinusDistanceSeamlessVoronoi");
-                        }
+                        kernel = shader.FindKernel("FMinusDistanceSeamlessVoronoi");
                         break;
                     case CellularType.DistanceMul:
-                        if (!seamless)
-                        {
-                            kernel = shader.FindKernel("FMultDistanceVoronoi");
-                        }
-                        else
-                        {
-                            kernel = shader.FindKernel("FMultDistanceSeamlessVoronoi");
-                        }
+                        kernel = shader.FindKernel("FMultDistanceSeamlessVoronoi");
                         break;
                     case CellularType.OneMinusF:
-                        if (!seamless)
-                        {
-                            kernel = shader.FindKernel("OneMinusDistanceVoronoi");
-                        }
-                        else
-                        {
-                            kernel = shader.FindKernel("OneMinusDistanceSeamlessVoronoi");
-                        }
+                        kernel = shader.FindKernel("OneMinusDistanceSeamlessVoronoi");
                         break;
                 }
 
@@ -161,43 +120,34 @@ namespace PTG
 
         public override void DrawInspector()
         {
-            if (!seamless)
-            {
-                GUILayout.BeginVertical("Box");
-                EditorGUILayout.LabelField("Octaves");
-                octaves = EditorGUILayout.IntField(octaves);
-                GUILayout.EndVertical();
-            }
+            GUILayout.BeginVertical("Box");
+            EditorGUILayout.LabelField("XScale");
+            XScale = EditorGUILayout.FloatField(XScale);
+            GUILayout.EndVertical();
 
-            if (!seamless)
-            {
-                GUILayout.BeginVertical("Box");
-                EditorGUILayout.LabelField("Frequency");
-                frequency = EditorGUILayout.FloatField(frequency);
-                GUILayout.EndVertical();
-            }
-
-            else
-            {
-                GUILayout.BeginVertical("Box");
-                EditorGUILayout.LabelField("XScale");
-                XScale = EditorGUILayout.FloatField(XScale);
-                GUILayout.EndVertical();
-
-                GUILayout.BeginVertical("Box");
-                EditorGUILayout.LabelField("YScale");
-                YScale = EditorGUILayout.FloatField(YScale);
-                GUILayout.EndVertical();
-            }
-
+            GUILayout.BeginVertical("Box");
+            EditorGUILayout.LabelField("YScale");
+            YScale = EditorGUILayout.FloatField(YScale);
+            GUILayout.EndVertical();
+           
             GUILayout.BeginVertical("Box");
             EditorGUILayout.LabelField("Cellular Type");
             type = (CellularType)EditorGUILayout.EnumPopup(type);
             GUILayout.EndVertical();
 
             GUILayout.BeginVertical("Box");
-            seamless = EditorGUILayout.Toggle("Seamless", seamless);
+            EditorGUILayout.LabelField("Jitter");
+            jitter = EditorGUILayout.Slider(jitter,0f,1f);
             GUILayout.EndVertical();
+
+            GUILayout.BeginHorizontal("Box");
+            EditorGUILayout.LabelField("Seed");
+            seed = EditorGUILayout.FloatField(seed);
+            if (GUILayout.Button("Random"))
+            {
+                seed = UnityEngine.Random.Range(0f, 1000f);
+            }
+            GUILayout.EndHorizontal();
 
             base.DrawInspector();
             
@@ -213,10 +163,10 @@ namespace PTG
                     {
                         shader.SetTexture(kernel, "Result", texture);
                         shader.SetFloat("ressolution", (float)ressolution.x);
-                        shader.SetInt("octaves", octaves);
-                        shader.SetFloat("frequency", frequency);
                         shader.SetFloat("YScale", YScale);
                         shader.SetFloat("XScale", XScale);
+                        shader.SetFloat("Jitter", jitter);
+                        shader.SetFloat("seed", seed);
                         shader.Dispatch(kernel, ressolution.x / 8, ressolution.y / 8, 1);
                     }
                 }

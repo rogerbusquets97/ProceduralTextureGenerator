@@ -161,7 +161,6 @@ namespace PTG
       
         public override void Compute(bool selfcompute = false)
         {
-            Debug.Log("Compute");
             if(selfcompute)
             {
                 if (shader != null)

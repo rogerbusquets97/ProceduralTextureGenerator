@@ -1,46 +1,27 @@
-﻿#pragma kernel F1DistanceVoronoi
-#pragma kernel F2DistanceVoronoi
-#pragma kernel F1DistanceSeamlessVoronoi
+﻿#pragma kernel F1DistanceSeamlessVoronoi
 #pragma kernel F2DistanceSeamlessVoronoi
-#pragma kernel FMinusDistanceVoronoi
 #pragma kernel FMinusDistanceSeamlessVoronoi
-#pragma kernel FMultDistanceVoronoi
 #pragma kernel FMultDistanceSeamlessVoronoi
-#pragma kernel OneMinusDistanceVoronoi
 #pragma kernel OneMinusDistanceSeamlessVoronoi
 
 RWTexture2D<float4> Result;
-int octaves;
 float ressolution;
-float frequency;
 float XScale;
 float YScale;
+float Jitter;
+float seed;
 
 //Utilities
-float3 fmod289(float3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-float2 fmod289(float2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
-float3 spermute(float3 x) { return fmod289(((x*34.0) + 1.0)*x); }
-float permute(float x) {
-	return fmod((34.0 * x + 1.0) * x, 289.0);
+float3 mod(float3 x, float y)
+{
+	return x - y * floor(x / y);
 }
-float2 permute(float2 x) {
-	return fmod((34.0 * x + 1.0) * x, 289.0);
+float3 mod3(float3 x, float3 y)
+{
+	return x - y * floor(x / y);
 }
 float3 permute(float3 x) {
-	return fmod((34.0 * x + 1.0) * x, 289.0);
-}
-float4 permute(float4 x) {
-	return fmod((34.0 * x + 1.0) * x, 289.0);
-}
-float2 hash(float2 p)
-{
-	p = float2(dot(p, float2(127.1, 311.7)), dot(p, float2(269.5, 183.3)));
-	return frac(sin(p)*43758.5453);
-}
-float random(in float2 st) {
-	return frac(sin(dot(st.xy,
-		float2(12.9898, 78.233)))*
-		43758.5453123);
+	return mod((34.0 * x + 1.0) * x, 289.0);
 }
 
 //Worley
@@ -56,17 +37,17 @@ float2 pworley(float3 P, float3 rep, float jitter, bool manhattanDistance)
 	float Kz = 0.166666666667; // 1/6
 	float Kzo = 0.416666666667; // 1/2-1/6*2
 
-	float3 Pi = fmod(floor(P), rep); // Integer cell coordinates
+	float3 Pi = mod3(floor(P), rep); // Integer cell coordinates
 	float3 Pf = frac(P) - 0.5;     // parametric position in cell, -0.5..0.5.
 
 	float3 Pfx = Pf.x + float3(1.0, 0.0, -1.0);
 	float3 Pfy = Pf.y + float3(1.0, 0.0, -1.0);
 	float3 Pfz = Pf.z + float3(1.0, 0.0, -1.0);
 
-	float3 p = permute(fmod(Pi.x + float3(-1.0, 0.0, 1.0), rep.x));
-	float3 p1 = permute(fmod(p + Pi.y - 1.0, rep.y));
-	float3 p2 = permute(fmod(p + Pi.y, rep.y));
-	float3 p3 = permute(fmod(p + Pi.y + 1.0, rep.y));
+	float3 p = permute(mod(Pi.x + float3(-1.0, 0.0, 1.0), rep.x));
+	float3 p1 = permute(mod(p + Pi.y - 1.0, rep.y));
+	float3 p2 = permute(mod(p + Pi.y, rep.y));
+	float3 p3 = permute(mod(p + Pi.y + 1.0, rep.y));
 
 	float3 p11 = permute(p1 + Pi.z - 1.0);
 	float3 p12 = permute(p1 + Pi.z);
@@ -81,39 +62,39 @@ float2 pworley(float3 P, float3 rep, float jitter, bool manhattanDistance)
 	float3 p33 = permute(p3 + Pi.z + 1.0);
 
 	float3 ox11 = frac(p11 * K) - Ko;
-	float3 oy11 = fmod(floor(p11 * K), 7.0) * K - Ko;
+	float3 oy11 = mod(floor(p11 * K), 7.0) * K - Ko;
 	float3 oz11 = floor(p11 * K2) * Kz - Kzo; // p11 < 289 guaranteed
 
 	float3 ox12 = frac(p12 * K) - Ko;
-	float3 oy12 = fmod(floor(p12 * K), 7.0) * K - Ko;
+	float3 oy12 = mod(floor(p12 * K), 7.0) * K - Ko;
 	float3 oz12 = floor(p12 * K2) * Kz - Kzo;
 
 	float3 ox13 = frac(p13 * K) - Ko;
-	float3 oy13 = fmod(floor(p13 * K), 7.0) * K - Ko;
+	float3 oy13 = mod(floor(p13 * K), 7.0) * K - Ko;
 	float3 oz13 = floor(p13 * K2) * Kz - Kzo;
 
 	float3 ox21 = frac(p21 * K) - Ko;
-	float3 oy21 = fmod(floor(p21 * K), 7.0) * K - Ko;
+	float3 oy21 = mod(floor(p21 * K), 7.0) * K - Ko;
 	float3 oz21 = floor(p21 * K2) * Kz - Kzo;
 
 	float3 ox22 = frac(p22 * K) - Ko;
-	float3 oy22 = fmod(floor(p22 * K), 7.0) * K - Ko;
+	float3 oy22 = mod(floor(p22 * K), 7.0) * K - Ko;
 	float3 oz22 = floor(p22 * K2) * Kz - Kzo;
 
 	float3 ox23 = frac(p23 * K) - Ko;
-	float3 oy23 = fmod(floor(p23 * K), 7.0) * K - Ko;
+	float3 oy23 = mod(floor(p23 * K), 7.0) * K - Ko;
 	float3 oz23 = floor(p23 * K2) * Kz - Kzo;
 
 	float3 ox31 = frac(p31 * K) - Ko;
-	float3 oy31 = fmod(floor(p31 * K), 7.0) * K - Ko;
+	float3 oy31 = mod(floor(p31 * K), 7.0) * K - Ko;
 	float3 oz31 = floor(p31 * K2) * Kz - Kzo;
 
 	float3 ox32 = frac(p32 * K) - Ko;
-	float3 oy32 = fmod(floor(p32 * K), 7.0) * K - Ko;
+	float3 oy32 = mod(floor(p32 * K), 7.0) * K - Ko;
 	float3 oz32 = floor(p32 * K2) * Kz - Kzo;
 
 	float3 ox33 = frac(p33 * K) - Ko;
-	float3 oy33 = fmod(floor(p33 * K), 7.0) * K - Ko;
+	float3 oy33 = mod(floor(p33 * K), 7.0) * K - Ko;
 	float3 oz33 = floor(p33 * K2) * Kz - Kzo;
 
 	float3 dx11 = Pfx + jitter * ox11;
@@ -193,274 +174,27 @@ float2 pworley(float3 P, float3 rep, float jitter, bool manhattanDistance)
 	return sqrt(d11.xy); // F1, F2
 }
 
-//Cell Noises
-
-float F1Cellular(float2 st)
-{
-	float2 Dist = 1.;
-	float2 I = floor(st);
-	float2 F = frac(st);
-
-	for (int X = -1; X <= 1; X++)
-		for (int Y = -1; Y <= 1; Y++)
-		{
-			float D = distance(hash(I + float2(X, Y)) + float2(X, Y), F);
-			if (D < Dist.x)
-			{
-				Dist.y = Dist.x;
-				Dist.x = D;
-			}
-			else if (D < Dist.y)
-			{
-				Dist.y = D;
-			}
-		}
-
-	return Dist.x;
-}
-float F2Cellular(float2 st)
-{
-	float2 Dist = 1.;
-	float2 I = floor(st);
-	float2 F = frac(st);
-
-	for (int X = -1; X <= 1; X++)
-		for (int Y = -1; Y <= 1; Y++)
-		{
-			float D = distance(hash(I + float2(X, Y)) + float2(X, Y), F);
-			if (D < Dist.x)
-			{
-				Dist.y = Dist.x;
-				Dist.x = D;
-			}
-			else if (D < Dist.y)
-			{
-				Dist.y = D;
-			}
-		}
-
-	return Dist.y;
-}
-float FMinusCellular(float2 st)
-{
-	float2 Dist = 1.;
-	float2 I = floor(st);
-	float2 F = frac(st);
-
-	for (int X = -1; X <= 1; X++)
-		for (int Y = -1; Y <= 1; Y++)
-		{
-			float D = distance(hash(I + float2(X, Y)) + float2(X, Y), F);
-			if (D < Dist.x)
-			{
-				Dist.y = Dist.x;
-				Dist.x = D;
-			}
-			else if (D < Dist.y)
-			{
-				Dist.y = D;
-			}
-		}
-
-	return Dist.y - Dist.x;
-}
-float FMultCellular(float2 st)
-{
-	float2 Dist = 1.;
-	float2 I = floor(st);
-	float2 F = frac(st);
-
-	for (int X = -1; X <= 1; X++)
-		for (int Y = -1; Y <= 1; Y++)
-		{
-			float D = distance(hash(I + float2(X, Y)) + float2(X, Y), F);
-			if (D < Dist.x)
-			{
-				Dist.y = Dist.x;
-				Dist.x = D;
-			}
-			else if (D < Dist.y)
-			{
-				Dist.y = D;
-			}
-		}
-
-	return Dist.y * Dist.x;
-}
-float F1Cellularfractal(float2 p)
-{
-	p *= frequency;
-	float value = 0.0;
-	float amplitude = .5;
-	//
-	// Loop of octaves
-	for (int i = 0; i < octaves; i++) {
-		value += amplitude * F1Cellular(p);
-		p *= 2.;
-		amplitude *= .5;
-	}
-
-	return value;
-}
-float F2Cellularfractal(float2 p)
-{
-	p *= frequency;
-	float value = 0.0;
-	float amplitude = .5;
-	//
-	// Loop of octaves
-	for (int i = 0; i < octaves; i++) {
-		value += amplitude * F2Cellular(p);
-		p *= 2.;
-		amplitude *= .5;
-	}
-
-	return value;
-}
-float FMinusCellularfractal(float2 p)
-{
-	p *= frequency;
-	float value = 0.0;
-	float amplitude = .5;
-	//
-	// Loop of octaves
-	for (int i = 0; i < octaves; i++) {
-		value += amplitude * FMinusCellular(p);
-		p *= 2.;
-		amplitude *= .5;
-	}
-
-	return value;
-}
-float FMultCellularFractal(float2 p)
-{
-	p *= frequency;
-	float value = 0.0;
-	float amplitude = .5;
-	//
-	// Loop of octaves
-	for (int i = 0; i < octaves; i++) {
-		value += amplitude * FMultCellular(p);
-		p *= 2.;
-		amplitude *= .5;
-	}
-
-	return value;
-}
-float F1CellularSeamlessfractal(float2 p)
-{
-	//p *= frequency;
-	float2 value = float2(0.0, 0.0);
-	float amplitude = .5;
-	float2 s = float2(float(XScale), float(YScale));
-	//
-	// Loop of octaves
-	for (int i = 0; i < octaves; i++) {
-		value += amplitude * pworley(float3(p * s, 1000), float3(s, 1000), 1., false);
-		p *= 2.;
-		amplitude *= .5;
-	}
-
-	return value;
-}
-float OneMinusFCellular(float2 st)
-{
-	float2 Dist = 1.;
-	float2 I = floor(st);
-	float2 F = frac(st);
-
-	for (int X = -1; X <= 1; X++)
-		for (int Y = -1; Y <= 1; Y++)
-		{
-			float D = distance(hash(I + float2(X, Y)) + float2(X, Y), F);
-			if (D < Dist.x)
-			{
-				Dist.y = Dist.x;
-				Dist.x = D;
-			}
-			else if (D < Dist.y)
-			{
-				Dist.y = D;
-			}
-		}
-
-	return 1 - Dist.x;
-}
-float OneMinusFCellularFractal(float2 p)
-{
-	p *= frequency;
-	float value = 0.0;
-	float amplitude = .5;
-	//
-	// Loop of octaves
-	for (int i = 0; i < octaves; i++) {
-		value += amplitude * OneMinusFCellular(p);
-		p *= 2.;
-		amplitude *= .5;
-	}
-
-	return value;
-}
-
 //Kernels
-[numthreads(8, 8, 1)]
-void F1DistanceVoronoi(uint3 id : SV_DispatchThreadID)
-{
-	float2 st = id.xy;
-	float c = F1Cellularfractal(st);
-	float3 color = float3(c, c, c);
-	Result[id.xy] = float4(color, 1.0);
-}
+
 [numthreads(8, 8, 1)]
 void F1DistanceSeamlessVoronoi(uint3 id : SV_DispatchThreadID)
 {
 	float2 st = float2(id.x / ressolution, id.y / ressolution);
 
 	float2 s = float2(float(XScale), float(YScale));
-	float2 f = pworley(float3(st * s, 1000), float3(s, 1000), 1., false) * 0.5;
+	float2 f = pworley(float3(st * s, seed), float3(s, 1000), Jitter, false) * 0.5;
 
 	float res = f.x;
 	Result[id.xy] = float4(res, res, res, 1);
 }
-[numthreads(8, 8, 1)]
-void F2DistanceVoronoi(uint3 id : SV_DispatchThreadID)
-{
-	float2 st = id.xy;
-	float c = F2Cellularfractal(st);
-	float3 color = float3(c, c, c);
-	Result[id.xy] = float4(color, 1.0);
-}
-[numthreads(8, 8, 1)]
-void FMinusDistanceVoronoi(uint3 id : SV_DispatchThreadID)
-{
-	float2 st = id.xy;
-	float c = FMinusCellularfractal(st);
-	float3 color = float3(c, c, c);
-	Result[id.xy] = float4(color, 1.0);
-}
-[numthreads(8, 8, 1)]
-void FMultDistanceVoronoi(uint3 id : SV_DispatchThreadID)
-{
-	float2 st = id.xy;
-	float c = FMultCellularFractal(st);
-	float3 color = float3(c, c, c);
-	Result[id.xy] = float4(color, 1.0);
-}
-[numthreads(8, 8, 1)]
-void OneMinusDistanceVoronoi(uint3 id : SV_DispatchThreadID)
-{
-	float2 st = id.xy;
-	float c = OneMinusFCellularFractal(st);
-	float3 color = float3(c, c, c);
-	Result[id.xy] = float4(color, 1.0);
-}
+
 [numthreads(8, 8, 1)]
 void F2DistanceSeamlessVoronoi(uint3 id : SV_DispatchThreadID)
 {
 	float2 st = float2(id.x / ressolution, id.y / ressolution);
 
 	float2 s = float2(float(XScale), float(YScale));
-	float2 f = pworley(float3(st * s, 1000), float3(s, 1000), 1., false) * 0.5;
+	float2 f = pworley(float3(st * s, seed), float3(s, 1000), Jitter, false) * 0.5;
 
 	float res = f.y;
 	Result[id.xy] = float4(res, res, res, 1);
@@ -472,7 +206,7 @@ void FMinusDistanceSeamlessVoronoi(uint3 id : SV_DispatchThreadID)
 	float2 st = float2(id.x / ressolution, id.y / ressolution);
 
 	float2 s = float2(float(XScale), float(YScale));
-	float2 f = pworley(float3(st * s, 1000), float3(s, 1000), 1., false) * 0.5;
+	float2 f = pworley(float3(st * s, seed), float3(s, 1000), Jitter, false) * 0.5;
 
 	float res = f.y - f.x;
 	Result[id.xy] = float4(res, res, res, 1);
@@ -484,7 +218,7 @@ void FMultDistanceSeamlessVoronoi(uint3 id : SV_DispatchThreadID)
 	float2 st = float2(id.x / ressolution, id.y / ressolution);
 
 	float2 s = float2(float(XScale), float(YScale));
-	float2 f = pworley(float3(st * s, 1000), float3(s, 1000), 1., false) * 0.5;
+	float2 f = pworley(float3(st * s, seed), float3(s, 1000), Jitter, false) * 0.5;
 
 	float res = f.x * f.y;
 	Result[id.xy] = float4(res, res, res, 1);
@@ -496,7 +230,7 @@ void OneMinusDistanceSeamlessVoronoi(uint3 id : SV_DispatchThreadID)
 	float2 st = float2(id.x / ressolution, id.y / ressolution);
 
 	float2 s = float2(float(XScale), float(YScale));
-	float2 f = pworley(float3(st * s, 1000), float3(s, 1000), 1., false);
+	float2 f = pworley(float3(st * s, seed), float3(s, 1000), Jitter, false);
 
 	float res = 1 - f.x;
 	Result[id.xy] = float4(res, res, res, 1);
