@@ -249,7 +249,7 @@ namespace PTG
             genericMenu.AddItem(new GUIContent("Filters/Blur"), false, () => OnClickAddNode(mousePosition, NodeType.Blur));
             genericMenu.AddItem(new GUIContent("Filters/Ambient Occlusion"), false, () => OnClickAddNode(mousePosition, NodeType.Occlusion));
             genericMenu.AddItem(new GUIContent("Filters/Make It Tile"), false, () => OnClickAddNode(mousePosition, NodeType.Tile));
-
+            genericMenu.AddItem(new GUIContent("Generators/Parabola"), false, () => OnClickAddNode(mousePosition, NodeType.Parabola));
 
             genericMenu.ShowAsContext();
         }
@@ -341,6 +341,12 @@ namespace PTG
                     tile.Init(mousePosition, currSize, currSize, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
                     nodes.Add(tile);
                     Selection.activeObject = tile;
+                    break;
+                case NodeType.Parabola:
+                    Parabola p = Parabola.CreateInstance<Parabola>();
+                    p.Init(mousePosition, currSize, currSize, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
+                    nodes.Add(p);
+                    Selection.activeObject = p;
                     break;
             }
         }

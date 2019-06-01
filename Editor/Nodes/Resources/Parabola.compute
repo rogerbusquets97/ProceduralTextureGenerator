@@ -1,0 +1,27 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel Parabola
+
+// Create a RenderTexture with enableRandomWrite flag and set it
+// with cs.SetTexture
+RWTexture2D<float4> Result;
+float ressolution;
+float count;
+float width;
+
+float parabola(float x, float k)
+{
+	return pow(4.0*x*(1. - x), k);
+}
+[numthreads(8,8,1)]
+void Parabola (uint3 id : SV_DispatchThreadID)
+{
+	float2 st = id.xy / ressolution;
+	st *= count;
+
+	float y = parabola(frac(st.x), width);
+
+	float3 color = float3(y, y, y);
+
+
+    Result[id.xy] = float4(color, 1.0);
+}
