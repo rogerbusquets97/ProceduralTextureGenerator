@@ -251,6 +251,7 @@ namespace PTG
             genericMenu.AddItem(new GUIContent("Filters/Make It Tile"), false, () => OnClickAddNode(mousePosition, NodeType.Tile));
             genericMenu.AddItem(new GUIContent("Generators/Parabola"), false, () => OnClickAddNode(mousePosition, NodeType.Parabola));
             genericMenu.AddItem(new GUIContent("Generators/Shape"), false, () => OnClickAddNode(mousePosition, NodeType.Shape));
+            genericMenu.AddItem(new GUIContent("Generators/Polygon"), false, () => OnClickAddNode(mousePosition, NodeType.Polygon));
 
             genericMenu.ShowAsContext();
         }
@@ -354,6 +355,12 @@ namespace PTG
                     shape.Init(mousePosition, currSize, currSize, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
                     nodes.Add(shape);
                     Selection.activeObject = shape;
+                    break;
+                case NodeType.Polygon:
+                    Polygon pol = Polygon.CreateInstance<Polygon>();
+                    pol.Init(mousePosition, currSize, currSize, inPointStyle, outPointStyle, OnClickInPoint, OnClickOutPoint, OnClickRemoveNode, this);
+                    nodes.Add(pol);
+                    Selection.activeObject = pol;
                     break;
             }
         }

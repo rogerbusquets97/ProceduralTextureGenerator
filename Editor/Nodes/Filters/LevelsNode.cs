@@ -5,19 +5,30 @@ using System;
 using UnityEditor;
 namespace PTG
 {
+    public struct LevelsData
+    {
+        public Vector2 inputLevels;
+        public Vector2 outputLevels;
+
+        public LevelsData(Vector2 input, Vector2 output)
+        {
+            this.inputLevels = input;
+            this.outputLevels = output;
+        }
+    }
     public class LevelsNode : NodeBase
     {
         RenderTexture source;
         ConnectionPoint inPoint;
         ConnectionPoint outPoint;
 
-        Filter.LevelsData data;
-        Filter.LevelsData lastData;
+        LevelsData data;
+        LevelsData lastData;
 
         public LevelsNode()
         {
             title = "Levels Node";
-            data = new Filter.LevelsData(new Vector2(0, 1), new Vector2(0, 1));
+            data = new LevelsData(new Vector2(0, 1), new Vector2(0, 1));
             lastData = data;
         }
 
@@ -80,26 +91,6 @@ namespace PTG
             GUILayout.EndVertical();
 
             base.DrawInspector();
-        }
-
-        public override object GetValue(int x, int y)
-        {
-            NodeBase n = null;
-            if (inPoint.connections.Count != 0)
-            {
-                n = inPoint.connections[0].outPoint.node;
-            }
-
-            if (n != null)
-            {
-                if (n.GetTexture() != null)
-                {
-                    //source = n.GetTexture().GetPixels();
-                    //return Filter.GetSingleLevelsValue(ressolution, x, y, source, data);
-                }
-            }
-
-            return 0;
         }
 
         public override void Compute(bool selfcompute = false)
