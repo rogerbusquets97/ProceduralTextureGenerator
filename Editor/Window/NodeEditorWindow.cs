@@ -244,11 +244,11 @@ namespace PTG
             genericMenu.AddItem(new GUIContent("Generators/Flat Color"), false, () => OnClickAddNode(mousePosition, NodeType.Color));
             genericMenu.AddItem(new GUIContent("Filters/Mix"), false, () => OnClickAddNode(mousePosition, NodeType.Mix));
             genericMenu.AddItem(new GUIContent("Operators/Mask Map"), false, () => OnClickAddNode(mousePosition, NodeType.MaskMap));
-            genericMenu.AddItem(new GUIContent("Generators/Tile Generator"), false, () => OnClickAddNode(mousePosition, NodeType.Generator));
+            genericMenu.AddItem(new GUIContent("Generators/Bricks"), false, () => OnClickAddNode(mousePosition, NodeType.Generator));
             genericMenu.AddItem(new GUIContent("Filters/Warp"), false, () => OnClickAddNode(mousePosition, NodeType.Warp));
             genericMenu.AddItem(new GUIContent("Filters/Blur"), false, () => OnClickAddNode(mousePosition, NodeType.Blur));
             genericMenu.AddItem(new GUIContent("Filters/Ambient Occlusion"), false, () => OnClickAddNode(mousePosition, NodeType.Occlusion));
-            genericMenu.AddItem(new GUIContent("Filters/Make It Tile"), false, () => OnClickAddNode(mousePosition, NodeType.Tile));
+            genericMenu.AddItem(new GUIContent("Filters/Transform"), false, () => OnClickAddNode(mousePosition, NodeType.Tile));
             genericMenu.AddItem(new GUIContent("Generators/Parabola"), false, () => OnClickAddNode(mousePosition, NodeType.Parabola));
             genericMenu.AddItem(new GUIContent("Generators/Shape"), false, () => OnClickAddNode(mousePosition, NodeType.Shape));
             genericMenu.AddItem(new GUIContent("Generators/Polygon"), false, () => OnClickAddNode(mousePosition, NodeType.Polygon));

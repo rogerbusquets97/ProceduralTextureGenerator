@@ -34,7 +34,7 @@ namespace PTG
 
         public TileGenerator()
         {
-            title = "Tile Generator";
+            title = "Bricks";
 
             size = 5f;
             brickWidth = 1f;

@@ -30,7 +30,7 @@ namespace PTG
 
         public MakeItTile()
         {
-            title = "Tile Generator";
+            title = "Transform";
             tilling = new Vector2(1f, 1f);
             lastTilling = tilling;
 
@@ -119,16 +119,16 @@ namespace PTG
             GUILayout.Label("Vertical Offset");
             offsetY = EditorGUILayout.Slider(offsetY, 0f, 1f);
             GUILayout.EndVertical();
-            GUILayout.BeginVertical("Box");
+            /*GUILayout.BeginVertical("Box");
             GUILayout.Label("Scale");
             scale = EditorGUILayout.Slider(scale, 0f, 1f);
-            GUILayout.EndVertical();
+            GUILayout.EndVertical();*/
             GUILayout.BeginVertical("Box");
             GUILayout.Label("Global Rotation angle");
             globalAngle = EditorGUILayout.Slider(globalAngle, 0f, 1f);
-            GUILayout.Label("Tile Rotation angle");
+           /* GUILayout.Label("Tile Rotation angle");
             angle = EditorGUILayout.Slider(angle, 0f, 1f);
-            GUILayout.EndVertical();
+            GUILayout.EndVertical();*/
 
             base.DrawInspector();
         }
