@@ -2,7 +2,7 @@
 
 PTG is a simple, fast and easy to use tool for procedural creation inside of Unity 3D. It is part of my final project at university. 
 
-[![Watch the video](https://i.imgur.com/vKb2F1B.png)](https://www.youtube.com/watch?v=NYdrz8-DIh8)
+[![Demo CountPages alpha](https://share.gifyoutube.com/KzB6Gb.gif)](https://www.youtube.com/watch?v=NYdrz8-DIh8)
 ## PTG makes wide use of Compute shaders, so if your GPU doesn’t support them I’m afraid you won’t be able to use it.
 
 ## How To Use It
